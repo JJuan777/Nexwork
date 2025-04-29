@@ -1,0 +1,141 @@
+{% load static %}
+{% load base64_tags %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Linkedin</title>
+	
+	<link rel="stylesheet" href="{% static 'css/Nexwork/style.css' %}">
+
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+	<link href="{% static 'bootstrap-5.3.3/css/bootstrap.min.css' %}" rel="stylesheet">
+
+	<link rel="stylesheet" href="{% static 'css/Nexwork/style2.css' %}">
+</head>
+<body style="background-color: #f0f2f5;">
+<nav class="navbar navbar-expand-lg bg-white shadow-sm">
+    <div class="container-fluid">
+
+        <!-- Izquierda -->
+        <a href="index.html" class="navbar-brand d-flex align-items-center gap-2">
+            <img src="{% static 'images/logo.png' %}" alt="Logo" width="40">
+        </a>
+
+        <!-- Botón hamburguesa -->
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent"
+            aria-controls="navbarContent" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <!-- Contenido colapsable -->
+        <div class="collapse navbar-collapse" id="navbarContent">
+
+            <!-- Buscador (móvil: full width) -->
+            <div class="d-flex align-items-center gap-2 flex-grow-1 my-2 my-lg-0">
+                <div class="input-group w-100 w-lg-auto">
+                    <span class="input-group-text bg-white border-end-0">
+                        <img src="{% static 'images/search.png' %}" alt="Buscar" width="16">
+                    </span>
+                    <input type="text" class="form-control border-start-0" placeholder="Buscar...">
+                </div>
+            </div>
+
+            <!-- Centro: navegación -->
+            <ul class="navbar-nav ms-auto me-auto gap-2 mt-2 mt-lg-0">
+                <li class="nav-item">
+                    <a href="#" class="nav-link active d-flex align-items-center gap-1">
+                        <img src="{% static 'images/home.png' %}" alt="Inicio" width="20">
+                        <span>Inicio</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link d-flex align-items-center gap-1">
+                        <img src="{% static 'images/network.png' %}" alt="Perfil" width="20">
+                        <span>Mi perfil</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link d-flex align-items-center gap-1">
+                        <img src="{% static 'images/jobs.png' %}" alt="Trabajos" width="20">
+                        <span>Trabajos</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link d-flex align-items-center gap-1">
+                        <img src="{% static 'images/message.png' %}" alt="Mensaje" width="20">
+                        <span>Mensaje</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link d-flex align-items-center gap-1">
+                        <img src="{% static 'images/notification.png' %}" alt="Notificaciones" width="20">
+                        <span>Notificaciones</span>
+                    </a>
+                </li>
+            </ul>
+
+            <!-- Derecha: perfil -->
+            <div class="dropdown d-flex align-items-center ms-auto">
+                <a href="#" class="d-flex align-items-center" id="dropdownProfile" data-bs-toggle="dropdown" aria-expanded="false">
+                    <img src="{% static 'images/user-1.png' %}" class="rounded-circle" alt="Usuario" width="40" height="40">
+                </a>
+                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownProfile">
+                    <li class="px-3 py-2">
+                        <div class="d-flex align-items-center gap-2">
+                            <img src="{% static 'images/user-1.png' %}" class="rounded-circle" width="40" height="40">
+                            <div>
+                                <h6 class="mb-0">{{ request.user.nombre }} {{ request.user.apellidos }}</h6>
+                                <small><a href="#" class="text-muted">Ver perfil</a></small>
+                            </div>
+                        </div>
+                    </li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li><a class="dropdown-item d-flex justify-content-between" href="#"><span><img src="{% static 'images/feedback.png' %}" width="16"> Feedback</span> <span>&gt;</span></a></li>
+                    <li><a class="dropdown-item d-flex justify-content-between" href="#"><span><img src="{% static 'images/setting.png' %}" width="16"> Settings & Privacy</span> <span>&gt;</span></a></li>
+                    <li><a class="dropdown-item d-flex justify-content-between" href="#"><span><img src="{% static 'images/help.png' %}" width="16"> Help & Support</span> <span>&gt;</span></a></li>
+                    <li><a class="dropdown-item d-flex justify-content-between" href="#"><span><img src="{% static 'images/display.png' %}" width="16"> Display & Accessibility</span> <span>&gt;</span></a></li>
+                    <li><a class="dropdown-item d-flex justify-content-between" href="#"><span><img src="{% static 'images/logout.png' %}" width="16"> Logout</span> <span>&gt;</span></a></li>
+                </ul>
+            </div>
+
+        </div>
+    </div>
+</nav>
+
+	
+    <!-- aqui se puede impprimir el post -->
+    {% block content %}
+    <!-- Aquí irá el contenido dinámico que varía según la página -->
+    {% endblock %}
+
+
+<script>
+    let profileMenu = document.getElementById("profileMenu");
+
+    function toggleMenu(){
+        profileMenu.classList.toggle("open-menu");
+    }
+
+    let sideActivity = document.getElementById("sidebarActivity");
+    let moreLink = document.getElementById("showMoreLink");
+
+    function toggleActivity(){
+        sideActivity.classList.toggle("open-activity");
+        if (sideActivity.classList.contains("open-activity")) {
+            moreLink.innerHTML="Show less <b>-</b>";
+            
+        }
+        else{
+            moreLink.innerHTML="Show More <b>+</b>";
+        }
+    }
+
+</script>
+<script src="{% static 'js/Nexwork/publicaciones.js' %}"></script>
+<!-- Scripts -->
+<script src="{% static 'bootstrap-5.3.3/js/bootstrap.bundle.min.js' %}"></script>
+</body>
+</html>

@@ -1,0 +1,162 @@
+{% extends 'Nexwork/layouts/layoutHome.html' %}
+{% load static %}
+{% load base64_tags %}
+{% block title %}Home{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row g-4">
+
+        <!-- Columna izquierda (oculta en móviles) -->
+        <div class="col-lg-3 d-none d-lg-block">
+            <div class="left-sidebar">
+                <div class="sidebar-profile-box mb-4">
+                    <div style="width: 100%; height: 150px; overflow: hidden;">
+                        {% if request.user.banner_profile %}
+                            <img src="{{ request.user.banner_profile|to_base64 }}" alt="Banner" style="width: 100%; height: 100%; object-fit: cover;">
+                        {% else %}
+                            <img src="{% static 'images/Network/default-banner.jpg' %}" alt="Banner" style="width: 100%; height: 100%; object-fit: cover;">
+                        {% endif %}
+                    </div>
+
+                    <div class="sidebar-profile-info text-center mt-3">
+                        {% if request.user.img_profile %}
+                            <img src="{{ request.user.img_profile|to_base64 }}" alt="Foto de perfil" class="rounded-circle mb-2" width="120">
+                        {% else %}
+                            <img src="{% static 'images/Network/default-profile.png' %}" alt="Foto de perfil" class="rounded-circle mb-2" width="120">
+                        {% endif %}
+                        <h5 class="mb-0">{{ request.user.nombre }} {{ request.user.apellidos }}</h5>
+                        <small>Data Analyst at IBM</small>
+                        <ul class="list-unstyled mt-3">
+                            <li>Your profile views <span class="float-end">24</span></li>
+                            <li>Your post views <span class="float-end">128</span></li>
+                            <li>Your Connections <span class="float-end">108</span></li>
+                        </ul>
+                    </div>
+
+                    <div class="sidebar-profile-link mt-3">
+                        <a href="#"><img src="{% static 'images/items.png' %}"> My Items</a>
+                        <a href="#"><img src="{% static 'images/premium.png' %}"> Try Premium</a>
+                    </div>
+                </div>
+
+                <div class="sidebar-activity">
+                    <h6>Recent</h6>
+                    
+                        <a href="#"><img src="{% static 'images/premium.png' %}"> {{ item }}</a>
+                    
+
+                    <h6 class="mt-3">Groups</h6>
+                    
+                        <a href="#"><img src="{% static 'images/premium.png' %}"> {{ group }}</a>
+                  
+
+                    <h6 class="mt-3">Hashtags</h6>
+                    
+                        <a href="#"><img src="{% static 'images/premium.png' %}"> {{ tag }}</a>
+                    
+
+                    <div class="discover-more-link mt-2">
+                        <a href="#">Discover More</a>
+                    </div>
+
+                    <p id="showMoreLink" class="mt-2 text-primary" onclick="toggleActivity()">Show more <b>+</b></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Columna central (siempre visible) -->
+        <div class="col-12 col-lg-6">
+            <div class="main-content">
+
+                <form id="form-publicacion" class="mb-4">
+                    {% csrf_token %}
+                    <div class="card p-3">
+                        <div class="d-flex align-items-start gap-2 mb-2">
+                            {% if request.user.img_profile %}
+                                <img src="{{ request.user.img_profile|to_base64 }}" class="rounded-circle" width="50" height="50" style="object-fit: cover;">
+                            {% else %}
+                                <img src="{% static 'images/Network/default-profile.png' %}" class="rounded-circle" width="50" height="50" style="object-fit: cover;">
+                            {% endif %}
+                            <textarea rows="2" class="form-control" placeholder="Escribe algo..."></textarea>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center mt-2">
+                            <label class="btn btn-light btn-sm d-flex align-items-center gap-1">
+                                <i class="fa-solid fa-image text-primary"></i> Imagen
+                                <input type="file" name="imagen" accept="image/*" hidden>
+                            </label>
+                            <span class="d-flex align-items-center gap-1">
+                                <i class="fa-solid fa-video text-primary"></i> Video
+                            </span>
+                            <span class="d-flex align-items-center gap-1">
+                                <i class="fa-solid fa-calendar-days text-primary"></i> Evento
+                            </span>
+                            <button type="submit" class="btn btn-primary btn-sm">Publicar</button>
+                        </div> 
+                    </div>
+                </form>
+
+                <div class="sort-by d-flex justify-content-end align-items-center mb-3">
+                    <p class="mb-0">Sort by: <span class="text-primary">Top <img src="{% static 'images/down-arrow.png' %}" width="10"></span></p>
+                </div>
+
+                <div id="contenedor-publicaciones"></div>
+
+            </div>
+        </div>
+
+        <!-- Columna derecha (oculta en móviles) -->
+        <div class="col-lg-3 d-none d-lg-block">
+            <div class="right-sidebar">
+                <div class="sidebar-news mb-4">
+                    <img src="{% static 'images/more.png' %}" class="info-icon float-end" width="20">
+                    <h6>Trending News</h6>
+
+                    <a href="#">High Demand for Skilled Employees</a>
+                    <small class="text-muted d-block">1d ago · 10,934 readers</small>
+
+                    <a href="#">Inflation in Canada Affects the Workforce</a>
+                    <small class="text-muted d-block">2d ago · 7,043 readers</small>
+
+                    <a href="#">Mass Recruiters fire Employees</a>
+                    <small class="text-muted d-block">4d ago · 17,789 readers</small>
+
+                    <a href="#">Crypto predicted to Boom this year</a>
+                    <small class="text-muted d-block">9d ago · 2,436 readers</small>
+
+                    <a href="#" class="read-more-link d-block mt-2">Read More</a>
+                </div>
+
+                <div class="sidebar-ad card p-3 mb-4">
+                    <small class="text-muted">Ad ···</small>
+                    <p>Master Web Development</p>
+                    <div class="d-flex gap-2 mb-2">
+                        <img src="{% static 'images/user-1.png' %}" width="40">
+                        <img src="{% static 'images/mi-logo.png' %}" width="40">
+                    </div>
+                    <b>Brand and Demand in Xiaomi</b>
+                    <a href="#" class="ad-link d-block mt-2">Learn More</a>
+                </div>
+
+                <div class="sidebar-useful-links">
+                    <a href="#">About</a>
+                    <a href="#">Accessibility</a>
+                    <a href="#">Help Center</a>
+                    <a href="#">Privacy Policy</a>
+                    <a href="#">Advertising</a>
+                    <a href="#">Get the App</a>
+                    <a href="#">More</a>
+
+                    <div class="text-center mt-3">
+                        <img src="{% static 'images/logo.png' %}" width="50">
+                        <p class="small text-muted mt-2">Linkedin &#169; 2022. All Rights Reserved</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+
+{% endblock %}

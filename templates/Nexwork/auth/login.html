@@ -1,0 +1,58 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Iniciar Sesión</title>
+    <link href="{% static 'bootstrap-5.3.3/css/bootstrap.min.css' %}" rel="stylesheet">
+    <!-- SweetAlert2 CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <link rel="stylesheet" href="{% static 'css/Nexwork/login.css' %}">
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row no-gutter">
+            <!-- Parte de la imagen -->
+            <div class="col-md-6 d-none d-md-flex bg-image"></div>
+
+            <!-- Parte del formulario -->
+            <div class="col-md-6 bg-light">
+                <div class="login d-flex align-items-center py-5">
+                    <div class="container">
+                        <div class="row">
+                            <div class="col-lg-10 col-xl-7 mx-auto">
+                                <h3 class="display-4">Sistema de Gestión</h3>
+                                <p class="text-muted mb-4">Accede para registrar y dar seguimiento a tus actividades.</p>
+                                <form>
+                                    <div class="form-group mb-3">
+                                        <input id="inputUser" type="text" placeholder="Usuario" required class="form-control rounded-pill border-0 shadow-sm px-4">
+                                    </div>
+                                    <div class="form-group mb-3">
+                                        <input id="inputPassword" type="password" placeholder="Contraseña" required class="form-control rounded-pill border-0 shadow-sm px-4 text-primary">
+                                    </div>
+                                    <div class="custom-control custom-checkbox mb-3">
+                                        <input id="customCheck1" type="checkbox" checked class="custom-control-input">
+                                        <label for="customCheck1" class="custom-control-label">Recordar mis datos</label>
+                                    </div>
+                                    <button type="submit" class="btn btn-primary d-block mx-auto text-uppercase mb-2 rounded-pill shadow-sm px-5">Iniciar sesión</button>
+
+                                    <div class="text-center mt-3">
+                                        <small><a href="#">¿Olvidaste tu contraseña?</a></small>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div><!-- Fin del contenido -->
+                </div>
+            </div><!-- Fin del lado derecho -->
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="{% static 'bootstrap-5.3.3/js/bootstrap.bundle.min.js' %}"></script>
+
+    <script src="{% static 'js/Nexwork/auth/login.js' %}"></script>
+</body>
+</html>
