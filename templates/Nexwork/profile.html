@@ -140,17 +140,20 @@
 	</div>
 	
 	</div>
-	<script src="{% static 'js/Nexwork/publicaciones.js' %}"></script>
 	<script>
-		document.addEventListener('DOMContentLoaded', function() {
-       
-			mostrarPlaceholdersPublicaciones(2);
-
-			cargarPublicaciones({{ usuario.id }});
-
-		});
-	</script>	
+		window.usuarioId = {{ usuario.id }};
+	</script>
 	
+
+	<script src="{% static 'js/Nexwork/publicaciones.js' %}"></script>
+
+		<!-- Finalmente, código adicional opcional -->
+<script>
+	document.addEventListener('DOMContentLoaded', function () {
+		mostrarPlaceholdersPublicaciones(2);
+		cargarPublicaciones(window.usuarioId);
+	});
+</script>
 
 </div>
 {% endblock %}

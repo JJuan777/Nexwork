@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
-from .models import Usuario, Rol, Publicacion, SolicitudAmistad, Amistad
+from .models import Usuario, Rol, Publicacion, SolicitudAmistad, Amistad, Like, Comentario
 
 
 class UsuarioAdmin(BaseUserAdmin):
@@ -36,7 +36,6 @@ class UsuarioAdmin(BaseUserAdmin):
         }),
     )
 
-
 class RolAdmin(admin.ModelAdmin):
     list_display = ('id', 'nombre', 'descripcion')
     search_fields = ('nombre',)
@@ -66,9 +65,25 @@ class AmistadAdmin(admin.ModelAdmin):
     search_fields = ('usuario1__usuario', 'usuario2__usuario')
     ordering = ('-fecha_creacion',)
 
+class LikeAdmin(admin.ModelAdmin):
+    list_display = ('id', 'usuario', 'publicacion', 'fecha_creacion')
+    search_fields = ('usuario__usuario', 'publicacion__descripcion')
+    list_filter = ('fecha_creacion',)
+    ordering = ('-fecha_creacion',)
+
+class ComentarioAdmin(admin.ModelAdmin):
+    list_display = ('id', 'publicacion', 'autor', 'contenido_corto', 'fecha_creacion')
+    search_fields = ('contenido', 'autor__usuario')
+    ordering = ('-fecha_creacion',)
+
+    def contenido_corto(self, obj):
+        return (obj.contenido[:50] + '...') if len(obj.contenido) > 50 else obj.contenido
+
 
 # Registro de modelos
 admin.site.register(Usuario, UsuarioAdmin)
+admin.site.register(Like, LikeAdmin)
+admin.site.register(Comentario, ComentarioAdmin)
 admin.site.register(Rol, RolAdmin)
 admin.site.register(Publicacion, PublicacionAdmin)
 admin.site.register(SolicitudAmistad, SolicitudAmistadAdmin)

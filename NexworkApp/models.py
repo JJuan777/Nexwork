@@ -133,3 +133,23 @@ class Like(models.Model):
 
     def __str__(self):
         return f"{self.usuario.usuario} dio like a Publicación {self.publicacion.id}"
+
+class Comentario(models.Model):
+    publicacion = models.ForeignKey(
+        'Publicacion', 
+        on_delete=models.CASCADE, 
+        related_name='comentarios'
+    )
+    autor = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='comentarios'
+    )
+    contenido = models.TextField(verbose_name='Comentario')
+    fecha_creacion = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.autor.usuario} comentó en Publicación {self.publicacion.id}"
+
+    class Meta:
+        ordering = ['-fecha_creacion']

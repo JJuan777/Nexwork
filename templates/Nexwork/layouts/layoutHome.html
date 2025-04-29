@@ -5,6 +5,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token }}">
 	<title>{% block title %}{% endblock %}</title>
 	
 	<link rel="stylesheet" href="{% static 'css/Nexwork/style.css' %}">
@@ -114,8 +115,11 @@
 
     </div>
 </nav>
+    
+    <form style="display:none;">
+        {% csrf_token %}
+    </form>
 
-	
     <!-- aqui se puede impprimir el post -->
     {% block content %}
     <!-- Aquí irá el contenido dinámico que varía según la página -->

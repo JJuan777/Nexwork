@@ -10,13 +10,14 @@ from django.views.decorators.http import require_http_methods
 from django.templatetags.static import static
 from django.utils.timezone import now
 from .models import Usuario
-from .models import Publicacion, Amistad
+from .models import Publicacion, Amistad, Like, Comentario
 import json
 from django.db.models import Q
 import base64
+from django.contrib.auth.decorators import login_required
 
 # Create your views here.
-
+@login_required
 def home_view(request):
     return render(request, 'Nexwork/index.html') 
 
@@ -41,13 +42,13 @@ def login_auth(request):
 
 def publicaciones_publicas(request):
     usuario = request.user
-    user_id = request.GET.get('id')  # <-- aquí recogemos el parámetro GET id
+    user_id = request.GET.get('id')
 
-    if user_id:  # Si mandaron un id, filtrar SOLO ese usuario
+    if user_id:
         publicaciones = Publicacion.objects.select_related('autor') \
             .filter(autor_id=user_id) \
             .order_by('-fecha_creacion')
-    else:  # Si no mandaron id, traer sus amigos + propias publicaciones
+    else:
         amistades = Amistad.objects.filter(Q(usuario1=usuario) | Q(usuario2=usuario))
         amigos_ids = set()
         for amistad in amistades:
@@ -68,17 +69,24 @@ def publicaciones_publicas(request):
         imagen_base64 = None
         if pub.imagen:
             imagen_base64 = f"data:image/jpeg;base64,{base64.b64encode(pub.imagen).decode()}"
-
-        # Imagen de perfil
+        
         if pub.autor.img_profile:
             img_profile = f"data:image/jpeg;base64,{base64.b64encode(pub.autor.img_profile).decode()}"
         else:
             img_profile = static('images/Nexwork/default-profile.png')
 
-        # Calcular "hace n minutos/horas/días"
-        fecha_creacion = pub.fecha_creacion
+        # NUEVO: calcular like y likes count
+        ya_dio_like = Like.objects.filter(usuario=usuario, publicacion=pub).exists()
+        likes_count = pub.likes.count()
+
+        # NUEVO: obtener nombres de usuarios que dieron like
+        usuarios_like = list(pub.likes.all().values_list('usuario__nombre', flat=True)[:3])
+
+        # NUEVO: contar comentarios
+        comentarios_count = pub.comentarios.count()
+
         ahora = now()
-        diferencia = ahora - fecha_creacion
+        diferencia = ahora - pub.fecha_creacion
 
         if diferencia.total_seconds() < 60:
             fecha_formateada = "Hace un momento"
@@ -106,7 +114,11 @@ def publicaciones_publicas(request):
             'descripcion': pub.descripcion,
             'imagen': imagen_base64,
             'img_profile': img_profile,
-            'es_mia': pub.autor_id == usuario.id
+            'es_mia': pub.autor_id == usuario.id,
+            'ya_dio_like': ya_dio_like,
+            'likes_count': likes_count,
+            'usuarios_like': usuarios_like,
+            'comentarios_count': comentarios_count,
         })
 
     return JsonResponse({'publicaciones': data})
@@ -168,6 +180,125 @@ def nueva_publicacion(request):
         return JsonResponse({'success': True})
     
     return JsonResponse({'success': False}, status=400)
+
+@csrf_exempt
+@require_http_methods(["POST", "DELETE"])
+def toggle_like_publicacion(request, id):
+    if not request.user.is_authenticated:
+        return JsonResponse({'success': False}, status=401)
+
+    try:
+        publicacion = Publicacion.objects.get(id=id)
+    except Publicacion.DoesNotExist:
+        return JsonResponse({'success': False, 'message': 'Publicación no encontrada'}, status=404)
+
+    if request.method == 'POST':
+        like, created = Like.objects.get_or_create(usuario=request.user, publicacion=publicacion)
+        return JsonResponse({'success': created, 'liked': True})
+
+    if request.method == 'DELETE':
+        Like.objects.filter(usuario=request.user, publicacion=publicacion).delete()
+        return JsonResponse({'success': True, 'liked': False})
+
+def obtener_comentarios(request, publicacion_id):
+    comentarios = Comentario.objects.select_related('autor').filter(publicacion_id=publicacion_id).order_by('-fecha_creacion')
+    ahora = now()
+
+    data = []
+    for comentario in comentarios:
+        if comentario.autor.img_profile:
+            img_profile = f"data:image/jpeg;base64,{base64.b64encode(comentario.autor.img_profile).decode()}"
+        else:
+            img_profile = static('images/Nexwork/default-profile.png')
+
+        # Calcular diferencia de tiempo
+        diferencia = ahora - comentario.fecha_creacion
+
+        if diferencia.total_seconds() < 60:
+            fecha_formateada = "Hace un momento"
+        elif diferencia.total_seconds() < 3600:
+            minutos = int(diferencia.total_seconds() // 60)
+            fecha_formateada = f"Hace {minutos} minuto{'s' if minutos != 1 else ''}"
+        elif diferencia.total_seconds() < 86400:
+            horas = int(diferencia.total_seconds() // 3600)
+            fecha_formateada = f"Hace {horas} hora{'s' if horas != 1 else ''}"
+        elif diferencia.total_seconds() < 604800:
+            dias = int(diferencia.total_seconds() // 86400)
+            fecha_formateada = f"Hace {dias} día{'s' if dias != 1 else ''}"
+        elif diferencia.total_seconds() < 2592000:
+            semanas = int(diferencia.total_seconds() // 604800)
+            fecha_formateada = f"Hace {semanas} semana{'s' if semanas != 1 else ''}"
+        else:
+            fecha_formateada = DateFormat(comentario.fecha_creacion).format('d M Y H:i')
+
+        data.append({
+            'comentario_id': comentario.id,
+            'autor': f"{comentario.autor.nombre} {comentario.autor.apellidos}",
+            'contenido': comentario.contenido,
+            'fecha': fecha_formateada,
+            'img_profile': img_profile,
+            'es_mio': comentario.autor_id == request.user.id,
+        })
+
+    return JsonResponse({'comentarios': data})
+
+@csrf_exempt
+@require_http_methods(["DELETE"])
+def eliminar_comentario(request, id):
+    if not request.user.is_authenticated:
+        return JsonResponse({'success': False}, status=401)
+
+    try:
+        comentario = Comentario.objects.get(id=id, autor=request.user)
+        comentario.delete()
+        return JsonResponse({'success': True})
+    except Comentario.DoesNotExist:
+        return JsonResponse({'success': False, 'message': 'Comentario no encontrado'}, status=404)
+
+@csrf_exempt
+@require_POST
+def editar_comentario(request, id):
+    if not request.user.is_authenticated:
+        return JsonResponse({'success': False}, status=401)
+
+    try:
+        comentario = Comentario.objects.get(id=id, autor=request.user)
+        data = json.loads(request.body)
+        contenido = data.get('contenido', '').strip()
+
+        if not contenido:
+            return JsonResponse({'success': False, 'message': 'Comentario vacío'}, status=400)
+
+        comentario.contenido = contenido
+        comentario.save()
+
+        return JsonResponse({'success': True, 'publicacion_id': comentario.publicacion_id})
+    except Comentario.DoesNotExist:
+        return JsonResponse({'success': False, 'message': 'Comentario no encontrado'}, status=404)
+
+@csrf_exempt
+@require_POST
+def nuevo_comentario(request, publicacion_id):
+    if not request.user.is_authenticated:
+        return JsonResponse({'success': False}, status=401)
+
+    try:
+        data = json.loads(request.body)
+        contenido = data.get('contenido', '').strip()
+
+        if not contenido:
+            return JsonResponse({'success': False, 'message': 'Comentario vacío'}, status=400)
+
+        publicacion = Publicacion.objects.get(id=publicacion_id)
+        Comentario.objects.create(
+            publicacion=publicacion,
+            autor=request.user,
+            contenido=contenido
+        )
+
+        return JsonResponse({'success': True})
+    except Exception as e:
+        return JsonResponse({'success': False, 'message': str(e)}, status=400)
 
 def profile_view(request, id):
     usuario = get_object_or_404(Usuario, id=id)
