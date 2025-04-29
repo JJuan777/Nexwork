@@ -63,3 +63,73 @@ class Publicacion(models.Model):
 
     class Meta:
         ordering = ['-fecha_creacion']
+
+class SolicitudAmistad(models.Model):
+    de_usuario = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='solicitudes_enviadas'
+    )
+    para_usuario = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='solicitudes_recibidas'
+    )
+    fecha_creacion = models.DateTimeField(auto_now_add=True)
+    estado = models.CharField(
+        max_length=20,
+        choices=[
+            ('pendiente', 'Pendiente'),
+            ('aceptada', 'Aceptada'),
+            ('rechazada', 'Rechazada'),
+            ('cancelada', 'Cancelada'),
+        ],
+        default='pendiente'
+    )
+
+    class Meta:
+        unique_together = ('de_usuario', 'para_usuario')
+
+    def __str__(self):
+        return f"{self.de_usuario} → {self.para_usuario} ({self.estado})"
+
+
+class Amistad(models.Model):
+    usuario1 = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='amistades_usuario1'
+    )
+    usuario2 = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='amistades_usuario2'
+    )
+    fecha_creacion = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('usuario1', 'usuario2')
+
+    def __str__(self):
+        return f"{self.usuario1} & {self.usuario2}"
+
+class Like(models.Model):
+    usuario = models.ForeignKey(
+        settings.AUTH_USER_MODEL, 
+        on_delete=models.CASCADE,
+        related_name='likes'
+    )
+    publicacion = models.ForeignKey(
+        'Publicacion',
+        on_delete=models.CASCADE,
+        related_name='likes'
+    )
+    fecha_creacion = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('usuario', 'publicacion')
+        verbose_name = 'Like'
+        verbose_name_plural = 'Likes'
+
+    def __str__(self):
+        return f"{self.usuario.usuario} dio like a Publicación {self.publicacion.id}"

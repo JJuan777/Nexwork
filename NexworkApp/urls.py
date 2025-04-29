@@ -13,7 +13,6 @@ urlpatterns = [
     path('api/publicaciones/', views.publicaciones_publicas, name='publicaciones_publicas'),
     path('api/publicaciones/nueva/', views.nueva_publicacion, name='nueva_publicacion'),
     path('api/publicaciones/<int:id>/editar/', views.editar_publicacion, name='editar_publicacion'),
-    path('api/publicaciones/<int:id>/eliminar_imagen/', views.eliminar_imagen_publicacion, name='eliminar_imagen_publicacion'),
     path('api/publicaciones/<int:id>/eliminar/', views.eliminar_publicacion, name='eliminar_publicacion'),
     #PROFILE
     path('profile/view/<int:id>/', views.profile_view, name='profile'),

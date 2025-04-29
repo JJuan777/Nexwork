@@ -1,0 +1,156 @@
+{% extends 'Nexwork/layouts/layoutHome.html' %}
+{% load static %}
+{% block title %}Perfil de {{ usuario.nombre }}{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+	<!-- Banner del perfil -->
+	<div class="position-relative">
+		<img src="{{ banner_profile }}" 
+			class="img-fluid w-100 rounded" 
+			style="height: 300px; object-fit: cover; object-position: center;"
+			alt="Banner de perfil">
+		
+		<!-- Foto de perfil superpuesta (centrada abajo) -->
+		<div class="position-absolute top-100 start-50 translate-middle" style="margin-top: -75px;">
+			<img src="{{ img_profile }}" class="rounded-circle border border-3 border-white shadow" width="150" height="150" style="object-fit: cover;" alt="Foto de perfil">
+		</div>
+
+		<!-- Información (escritorio: abajo izquierda) -->
+		<div class="position-absolute bottom-0 start-0 mb-3 ms-4 bg-white bg-opacity-75 px-4 py-3 rounded-4 shadow-sm d-none d-md-block" style="max-width: 320px;">
+			<h5 class="fw-bold mb-1 text-dark">{{ usuario.nombre }} {{ usuario.apellidos }}</h5>
+			<p class="text-muted mb-1" style="font-size: 0.95rem;">
+				<i class="bi bi-at me-1 text-primary"></i>@{{ usuario.usuario }}
+			</p>
+			<p class="text-muted mb-0" style="font-size: 0.9rem;">
+				<i class="bi bi-envelope-fill me-1 text-secondary"></i>Founder and CEO at LearnX
+			</p>
+		</div>
+
+		<!-- Información (móvil: arriba centrado) -->
+		<div class="position-absolute top-0 start-50 translate-middle-x mt-2 bg-white bg-opacity-75 px-4 py-3 rounded-4 shadow-sm text-center d-block d-md-none" style="max-width: 90%;">
+			<h6 class="fw-bold mb-1 text-dark">{{ usuario.nombre }} {{ usuario.apellidos }}</h6>
+			<p class="text-muted mb-1" style="font-size: 0.9rem;">
+				<i class="bi bi-at me-1 text-primary"></i>@{{ usuario.usuario }}
+			</p>
+			<p class="text-muted mb-0" style="font-size: 0.85rem;">
+				<i class="bi bi-envelope-fill me-1 text-secondary"></i>Founder and CEO at LearnX
+			</p>
+		</div>
+
+		<!-- Botón de contacto escritorio: esquina inferior derecha -->
+		<div class="position-absolute bottom-0 end-0 mb-3 me-4 d-none d-md-block">
+			<button class="btn btn-primary rounded-pill d-flex align-items-center px-3 py-2 shadow">
+				<i class="fa-solid fa-user-plus me-2"></i> Contacto
+			</button>
+		</div>
+
+		<!-- Botón de contacto móvil: centrado encima de la imagen -->
+		<div class="position-absolute start-50 translate-middle-x d-block d-md-none" style="top: 87%;">
+			<button class="btn btn-primary rounded-pill d-flex align-items-center px-4 py-2 shadow">
+				<i class="fa-solid fa-user-plus me-2"></i> Contacto
+			</button>
+		</div>
+
+	</div>
+
+	<div class="row mt-4">
+    
+		<!-- 🧑‍🤝‍🧑 Columna izquierda: contactos -->
+		<div class="col-md-3 d-none d-md-block">
+			<div class="card shadow rounded-4 p-3 mb-4">
+				<h5 class="fw-bold mb-3">
+					<i class="bi bi-people-fill me-2 text-primary"></i> Contactos
+				</h5>
+
+				<!-- Contacto 1 -->
+				<div class="d-flex align-items-center mb-4">
+					<img src="{% static 'images/Nexwork/default-profile.png' %}" class="rounded-circle me-3 shadow-sm" width="48" height="48" style="object-fit: cover;">
+					<div class="flex-grow-1">
+						<a href="#" class="text-decoration-none text-dark fw-semibold d-block">Laura Gómez</a>
+						<small class="text-muted">UX Designer · Google</small>
+					</div>
+					<span class="badge bg-light text-secondary ms-2">Nuevo</span>
+				</div>
+	
+				<!-- Contacto 2 -->
+				<div class="d-flex align-items-center mb-4">
+					<img src="{% static 'images/Nexwork/default-profile.png' %}" class="rounded-circle me-3 shadow-sm" width="48" height="48" style="object-fit: cover;">
+					<div class="flex-grow-1">
+						<a href="#" class="text-decoration-none text-dark fw-semibold d-block">Carlos Ruiz</a>
+						<small class="text-muted">Full Stack Dev · Microsoft</small>
+					</div>
+					<span class="badge bg-success-subtle text-success">Conectado</span>
+				</div>
+	
+				<!-- Contacto 3 -->
+				<div class="d-flex align-items-center">
+					<img src="{% static 'images/Nexwork/default-profile.png' %}" class="rounded-circle me-3 shadow-sm" width="48" height="48" style="object-fit: cover;">
+					<div class="flex-grow-1">
+						<a href="#" class="text-decoration-none text-dark fw-semibold d-block">Ana Torres</a>
+						<small class="text-muted">Data Analyst · IBM</small>
+					</div>
+					<span class="badge bg-secondary-subtle text-secondary">Offline</span>
+				</div>
+			</div>
+		</div>
+	
+		<!-- 📝 Columna central: publicaciones -->
+		<div class="col-md-6" id="contenedor-publicaciones">
+			<!-- Aquí se cargarán publicaciones dinámicamente -->
+		</div>
+	
+		<!-- 🎓 Columna derecha: experiencia y educación -->
+		<div class="col-md-3 d-none d-md-block">
+			<div class="card shadow rounded-4 p-3 mb-4">
+				<h5 class="fw-bold mb-3">
+					<i class="bi bi-briefcase-fill me-2 text-primary"></i> Experiencia
+				</h5>
+	
+				<div class="mb-4">
+					<h6 class="fw-semibold mb-0">Desarrollador Backend</h6>
+					<small class="text-muted d-block">Empresa X · Ene 2023 - Presente</small>
+					<span class="badge bg-primary-subtle text-primary mt-1">Python</span>
+					<span class="badge bg-primary-subtle text-primary">Django</span>
+					<span class="badge bg-primary-subtle text-primary">APIs</span>
+				</div>
+	
+				<div class="mb-4">
+					<h6 class="fw-semibold mb-0">Ingeniero de Soporte</h6>
+					<small class="text-muted d-block">Empresa Y · 2020 - 2022</small>
+					<span class="badge bg-warning-subtle text-warning mt-1">SQL</span>
+					<span class="badge bg-warning-subtle text-warning">Atención a clientes</span>
+				</div>
+			</div>
+	
+			<div class="card shadow rounded-4 p-3">
+				<h5 class="fw-bold mb-3">
+					<i class="bi bi-mortarboard-fill me-2 text-primary"></i> Educación
+				</h5>
+	
+				<div>
+					<h6 class="fw-semibold mb-0">Lic. en Sistemas Computacionales</h6>
+					<small class="text-muted d-block">Universidad ABC · 2016 - 2020</small>
+					<span class="badge bg-info-subtle text-info mt-1">Bases de Datos</span>
+					<span class="badge bg-info-subtle text-info">Redes</span>
+					<span class="badge bg-info-subtle text-info">Programación</span>
+				</div>
+			</div>
+		</div>
+	</div>
+	
+	</div>
+	<script src="{% static 'js/Nexwork/publicaciones.js' %}"></script>
+	<script>
+		document.addEventListener('DOMContentLoaded', function() {
+       
+			mostrarPlaceholdersPublicaciones(2);
+
+			cargarPublicaciones({{ usuario.id }});
+
+		});
+	</script>	
+	
+
+</div>
+{% endblock %}

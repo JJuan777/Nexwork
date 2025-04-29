@@ -1,11 +1,11 @@
 {% load static %}
 {% load base64_tags %}
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Linkedin</title>
+	<title>{% block title %}{% endblock %}</title>
 	
 	<link rel="stylesheet" href="{% static 'css/Nexwork/style.css' %}">
 
@@ -20,9 +20,9 @@
     <div class="container-fluid">
 
         <!-- Izquierda -->
-        <a href="index.html" class="navbar-brand d-flex align-items-center gap-2">
-            <img src="{% static 'images/logo.png' %}" alt="Logo" width="40">
-        </a>
+		<a href="{% url 'home' %}" class="navbar-brand d-flex align-items-center gap-2">
+			<img src="{% static 'images/logo.png' %}" alt="Logo" width="40">
+		</a>		
 
         <!-- Botón hamburguesa -->
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent"
@@ -46,13 +46,13 @@
             <!-- Centro: navegación -->
             <ul class="navbar-nav ms-auto me-auto gap-2 mt-2 mt-lg-0">
                 <li class="nav-item">
-                    <a href="#" class="nav-link active d-flex align-items-center gap-1">
+                    <a href="{% url 'home' %}" class="nav-link active d-flex align-items-center gap-1">
                         <img src="{% static 'images/home.png' %}" alt="Inicio" width="20">
                         <span>Inicio</span>
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a href="#" class="nav-link d-flex align-items-center gap-1">
+                    <a href="{% url 'profile' request.user.id %}" class="nav-link d-flex align-items-center gap-1">
                         <img src="{% static 'images/network.png' %}" alt="Perfil" width="20">
                         <span>Mi perfil</span>
                     </a>
@@ -78,17 +78,27 @@
             </ul>
 
             <!-- Derecha: perfil -->
-            <div class="dropdown d-flex align-items-center ms-auto">
-                <a href="#" class="d-flex align-items-center" id="dropdownProfile" data-bs-toggle="dropdown" aria-expanded="false">
-                    <img src="{% static 'images/user-1.png' %}" class="rounded-circle" alt="Usuario" width="40" height="40">
-                </a>
+			<div class="dropdown d-flex align-items-center justify-content-center ms-auto px-2">
+				<a href="#" class="d-flex align-items-center gap-2 p-2" id="dropdownProfile" data-bs-toggle="dropdown" aria-expanded="false">
+					<img src="{{ request.user.img_profile|to_base64 }}" 
+						alt="Foto de perfil" 
+						class="rounded-circle" 
+						width="40" height="40" 
+						style="object-fit: cover; padding: 4px;">
+						<i class="fa-solid fa-caret-down"></i> <!-- Icono flecha abajo -->
+				</a>
+			
                 <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownProfile">
                     <li class="px-3 py-2">
                         <div class="d-flex align-items-center gap-2">
-                            <img src="{% static 'images/user-1.png' %}" class="rounded-circle" width="40" height="40">
+                            <img src="{{ request.user.img_profile|to_base64 }}" 
+								alt="Foto de perfil" 
+								class="rounded-circle mb-2" 
+								width="40" height="40" 
+								style="object-fit: cover;">
                             <div>
                                 <h6 class="mb-0">{{ request.user.nombre }} {{ request.user.apellidos }}</h6>
-                                <small><a href="#" class="text-muted">Ver perfil</a></small>
+                                <small><a href="{% url 'profile' request.user.id %}" class="text-muted">Ver perfil</a></small>
                             </div>
                         </div>
                     </li>
@@ -100,8 +110,8 @@
                     <li><a class="dropdown-item d-flex justify-content-between" href="#"><span><img src="{% static 'images/logout.png' %}" width="16"> Logout</span> <span>&gt;</span></a></li>
                 </ul>
             </div>
-
         </div>
+
     </div>
 </nav>
 
@@ -134,8 +144,12 @@
     }
 
 </script>
-<script src="{% static 'js/Nexwork/publicaciones.js' %}"></script>
+
 <!-- Scripts -->
 <script src="{% static 'bootstrap-5.3.3/js/bootstrap.bundle.min.js' %}"></script>
+
+<!-- SweetAlert2 CDN -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
 </body>
 </html>

@@ -158,5 +158,14 @@
     </div>
 </div>
 
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        
+        mostrarPlaceholdersPublicaciones(2);
 
+        cargarPublicaciones(); // sin ID => carga publicaciones de amigos y propias
+    });
+</script>
+
+<script src="{% static 'js/Nexwork/publicaciones.js' %}"></script>
 {% endblock %}

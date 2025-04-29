@@ -10,7 +10,9 @@ from django.views.decorators.http import require_http_methods
 from django.templatetags.static import static
 from django.utils.timezone import now
 from .models import Usuario
+from .models import Publicacion, Amistad
 import json
+from django.db.models import Q
 import base64
 
 # Create your views here.
@@ -38,7 +40,28 @@ def login_auth(request):
     return JsonResponse({'success': False, 'message': 'Método no permitido'}, status=405)
 
 def publicaciones_publicas(request):
-    publicaciones = Publicacion.objects.select_related('autor').order_by('-fecha_creacion')
+    usuario = request.user
+    user_id = request.GET.get('id')  # <-- aquí recogemos el parámetro GET id
+
+    if user_id:  # Si mandaron un id, filtrar SOLO ese usuario
+        publicaciones = Publicacion.objects.select_related('autor') \
+            .filter(autor_id=user_id) \
+            .order_by('-fecha_creacion')
+    else:  # Si no mandaron id, traer sus amigos + propias publicaciones
+        amistades = Amistad.objects.filter(Q(usuario1=usuario) | Q(usuario2=usuario))
+        amigos_ids = set()
+        for amistad in amistades:
+            if amistad.usuario1_id == usuario.id:
+                amigos_ids.add(amistad.usuario2_id)
+            else:
+                amigos_ids.add(amistad.usuario1_id)
+
+        amigos_ids.add(usuario.id)
+
+        publicaciones = Publicacion.objects.select_related('autor') \
+            .filter(autor_id__in=amigos_ids) \
+            .order_by('-fecha_creacion')
+
     data = []
 
     for pub in publicaciones:
@@ -46,11 +69,11 @@ def publicaciones_publicas(request):
         if pub.imagen:
             imagen_base64 = f"data:image/jpeg;base64,{base64.b64encode(pub.imagen).decode()}"
 
-        # Imagen de perfil (si no tiene, usar default)
+        # Imagen de perfil
         if pub.autor.img_profile:
             img_profile = f"data:image/jpeg;base64,{base64.b64encode(pub.autor.img_profile).decode()}"
         else:
-            img_profile = static('images/default2.jpg')
+            img_profile = static('images/Nexwork/default-profile.png')
 
         # Calcular "hace n minutos/horas/días"
         fecha_creacion = pub.fecha_creacion
@@ -68,11 +91,10 @@ def publicaciones_publicas(request):
         elif diferencia.total_seconds() < 604800:
             dias = int(diferencia.total_seconds() // 86400)
             fecha_formateada = f"Hace {dias} día{'s' if dias != 1 else ''}"
-        elif diferencia.total_seconds() < 2592000:  # hasta 30 días (1 mes aprox)
+        elif diferencia.total_seconds() < 2592000:
             semanas = int(diferencia.total_seconds() // 604800)
             fecha_formateada = f"Hace {semanas} semana{'s' if semanas != 1 else ''}"
         else:
-            # Si es más de 1 mes, muestra fecha normal
             fecha_formateada = DateFormat(pub.fecha_creacion).format('d M Y H:i')
 
         data.append({
@@ -84,7 +106,7 @@ def publicaciones_publicas(request):
             'descripcion': pub.descripcion,
             'imagen': imagen_base64,
             'img_profile': img_profile,
-            'es_mia': pub.autor_id == request.user.id
+            'es_mia': pub.autor_id == usuario.id
         })
 
     return JsonResponse({'publicaciones': data})
@@ -102,28 +124,19 @@ def editar_publicacion(request, id):
 
     descripcion = request.POST.get('descripcion', '').strip()
     imagen = request.FILES.get('imagen')
+    borrar_imagen = request.POST.get('borrar_imagen') == 'true'
 
     pub.descripcion = descripcion
-    if imagen:
+
+    if borrar_imagen:
+        pub.imagen = None  # Limpia la imagen
+    elif imagen:
         pub.imagen = imagen.read()
+
     pub.save()
 
     return JsonResponse({'success': True})
 
-@csrf_exempt
-@require_POST
-def eliminar_imagen_publicacion(request, id):
-    if not request.user.is_authenticated:
-        return JsonResponse({'success': False}, status=401)
-
-    try:
-        pub = Publicacion.objects.get(id=id, autor=request.user)
-        pub.imagen = None
-        pub.save()
-        return JsonResponse({'success': True})
-    except Publicacion.DoesNotExist:
-        return JsonResponse({'success': False}, status=404)
-    
 @csrf_exempt
 @require_http_methods(["DELETE"])
 def eliminar_publicacion(request, id):
@@ -163,13 +176,13 @@ def profile_view(request, id):
     if usuario.img_profile:
         img_profile = f"data:image/jpeg;base64,{base64.b64encode(usuario.img_profile).decode()}"
     else:
-        img_profile = static('images/default2.jpg')
+        img_profile = static('images/Nexwork/default-profile.png')
 
     # Banner del perfil
     if usuario.banner_profile:
         banner_profile = f"data:image/jpeg;base64,{base64.b64encode(usuario.banner_profile).decode()}"
     else:
-        banner_profile = static('images/default-banner.jpg')
+        banner_profile = static('images/Nexwork/banner_default2.png')
 
     return render(request, 'Nexwork/profile.html', {
         'usuario': usuario,

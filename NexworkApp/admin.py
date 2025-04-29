@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
-from .models import Usuario, Rol, Publicacion
+from .models import Usuario, Rol, Publicacion, SolicitudAmistad, Amistad
 
 
 class UsuarioAdmin(BaseUserAdmin):
@@ -15,7 +15,6 @@ class UsuarioAdmin(BaseUserAdmin):
         ('Información personal', {
             'fields': (
                 'nombre', 'apellidos', 'correo', 'telefono', 'rol',
-                'img_profile', 'banner_profile'  # ✅ nuevos campos binarios
             )
         }),
         ('Permisos', {
@@ -31,12 +30,12 @@ class UsuarioAdmin(BaseUserAdmin):
             'classes': ('wide',),
             'fields': (
                 'usuario', 'nombre', 'apellidos', 'correo', 'telefono', 'rol',
-                'img_profile', 'banner_profile',  # ✅ también al crear usuario
                 'password1', 'password2',
                 'is_active', 'is_staff', 'is_superuser'
             ),
         }),
     )
+
 
 class RolAdmin(admin.ModelAdmin):
     list_display = ('id', 'nombre', 'descripcion')
@@ -55,7 +54,22 @@ class PublicacionAdmin(admin.ModelAdmin):
     descripcion_corta.short_description = 'Descripción'
 
 
+class SolicitudAmistadAdmin(admin.ModelAdmin):
+    list_display = ('id', 'de_usuario', 'para_usuario', 'estado', 'fecha_creacion')
+    list_filter = ('estado', 'fecha_creacion')
+    search_fields = ('de_usuario__usuario', 'para_usuario__usuario')
+    ordering = ('-fecha_creacion',)
+
+
+class AmistadAdmin(admin.ModelAdmin):
+    list_display = ('id', 'usuario1', 'usuario2', 'fecha_creacion')
+    search_fields = ('usuario1__usuario', 'usuario2__usuario')
+    ordering = ('-fecha_creacion',)
+
+
 # Registro de modelos
 admin.site.register(Usuario, UsuarioAdmin)
 admin.site.register(Rol, RolAdmin)
 admin.site.register(Publicacion, PublicacionAdmin)
+admin.site.register(SolicitudAmistad, SolicitudAmistadAdmin)
+admin.site.register(Amistad, AmistadAdmin)
