@@ -1,6 +1,7 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
-from .models import Usuario, Rol, Publicacion, SolicitudAmistad, Amistad, Like, Comentario
+from .models import Usuario, Rol, Publicacion, SolicitudAmistad, Amistad, Like, Comentario, PublicacionCompartida
+from .models import Trabajo, Postulacion
 
 
 class UsuarioAdmin(BaseUserAdmin):
@@ -78,10 +79,35 @@ class ComentarioAdmin(admin.ModelAdmin):
 
     def contenido_corto(self, obj):
         return (obj.contenido[:50] + '...') if len(obj.contenido) > 50 else obj.contenido
+    
+class PublicacionCompartidaAdmin(admin.ModelAdmin):
+    list_display = ('id', 'usuario', 'publicacion_original', 'comentario_corto', 'fecha_compartida', 'es_publico')
+    list_filter = ('es_publico', 'fecha_compartida')
+    search_fields = ('usuario__usuario', 'publicacion_original__descripcion')
+
+    def comentario_corto(self, obj):
+        return (obj.comentario[:50] + '...') if obj.comentario and len(obj.comentario) > 50 else obj.comentario
+    comentario_corto.short_description = 'Comentario'
+
+class TrabajoAdmin(admin.ModelAdmin):
+    list_display = ('id', 'titulo', 'autor', 'ubicacion', 'modalidad', 'activo', 'fecha_publicacion')
+    list_filter = ('modalidad', 'activo', 'fecha_publicacion')
+    search_fields = ('titulo', 'descripcion', 'autor__usuario')
+    ordering = ('-fecha_publicacion',)
+
+class PostulacionAdmin(admin.ModelAdmin):
+    list_display = ('id', 'trabajo', 'usuario', 'fecha_postulacion')
+    search_fields = ('trabajo__titulo', 'usuario__usuario')
+    list_filter = ('fecha_postulacion',)
+    ordering = ('-fecha_postulacion',)
+
 
 
 # Registro de modelos
 admin.site.register(Usuario, UsuarioAdmin)
+admin.site.register(PublicacionCompartida, PublicacionCompartidaAdmin)
+admin.site.register(Trabajo, TrabajoAdmin)
+admin.site.register(Postulacion, PostulacionAdmin)
 admin.site.register(Like, LikeAdmin)
 admin.site.register(Comentario, ComentarioAdmin)
 admin.site.register(Rol, RolAdmin)

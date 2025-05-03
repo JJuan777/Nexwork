@@ -14,22 +14,24 @@ urlpatterns = [
     path('api/publicaciones/nueva/', views.nueva_publicacion, name='nueva_publicacion'),
     path('api/publicaciones/<int:id>/editar/', views.editar_publicacion, name='editar_publicacion'),
     path('api/publicaciones/<int:id>/eliminar/', views.eliminar_publicacion, name='eliminar_publicacion'),
+    path('api/publicaciones_compartidas/<int:id>/eliminar/', views.eliminar_publicacion_compartida, name='eliminar_publicacion_compartida'),
     path('api/likes/<int:id>/', views.toggle_like_publicacion, name='toggle_like_publicacion'),
     path('api/comentarios/<int:publicacion_id>/', views.obtener_comentarios, name='obtener_comentarios'),
     path('api/comentarios/nuevo/<int:publicacion_id>/', views.nuevo_comentario, name='nuevo_comentario'),
     path('api/comentarios/editar/<int:id>/', views.editar_comentario, name='editar_comentario'),
     path('api/comentarios/eliminar/<int:id>/', views.eliminar_comentario, name='eliminar_comentario'),
-
-
+    path('api/publicaciones/compartir/', views.compartir_publicacion, name='compartir_publicacion'),
+    path('api/solicitudes/enviar/', views.enviar_solicitud_amistad, name='enviar_solicitud_amistad'),
 
     #PROFILE
     path('profile/view/<int:id>/', views.profile_view, name='profile'),
     path('api/usuario/<int:id>/actualizar_img/', views.actualizar_img_profile, name='actualizar_img_profile'),
     path('api/usuario/<int:id>/actualizar_banner/', views.actualizar_banner_profile, name='actualizar_banner_profile'),
+
+    path('newworks/', views.trabajos_view, name='trabajos'),
+    path('api/trabajos/', views.trabajos_api, name='api_trabajos'),
+
     
-
-
-
 
 
 

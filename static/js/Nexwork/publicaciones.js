@@ -21,56 +21,96 @@
             `;
         }
     }
+    let offset = 0;
+    const limit = 5;
+    let cargando = false;
+    let finDePublicaciones = false;
 
-    function cargarPublicaciones(id = null) {
+    function cargarPublicaciones(id = null, append = false) {
+        if (cargando || finDePublicaciones) return;
+        cargando = true;
+    
         const contenedor = document.getElementById('contenedor-publicaciones');
-        
-        let url = '/api/publicaciones/';
+        const mensajeFin = document.getElementById('mensaje-fin');
+    
+        let url = `/api/publicaciones/?offset=${offset}&limit=${limit}`;
         if (id !== null) {
-            url += `?id=${id}`;
+            url += `&id=${id}`;
         }
     
         fetch(url)
             .then(res => res.json())
             .then(data => {
                 const publicaciones = data.publicaciones;
-                contenedor.innerHTML = '';
+    
+                if (!append) contenedor.innerHTML = '';
+    
+                if (publicaciones.length === 0) {
+                    finDePublicaciones = true;
+                    mensajeFin.style.display = 'block';
+                    return;
+                }
     
                 publicaciones.forEach(pub => {
-                    const imgProfileSrc = pub.img_profile.startsWith('data:image') ? pub.img_profile : `${pub.img_profile}`;
-    
+                    const imgProfileSrc = pub.img_profile_autor_original.startsWith('data:image') ? pub.img_profile_autor_original : `${pub.img_profile_autor_original}`;
                     const yaDioLike = pub.ya_dio_like;
                     const likeIconClass = yaDioLike ? 'fa-solid text-primary' : 'fa-regular';
                     const likeTextClass = yaDioLike ? 'text-primary' : '';
     
+                    let compartidoHeader = '';
+                    if (pub.es_compartida) {
+                        const imgCompartido = pub.img_profile_compartido_por.startsWith('data:image')
+                            ? pub.img_profile_compartido_por
+                            : `${pub.img_profile_compartido_por}`;
+                    
+                        compartidoHeader = `
+                            <div class="text-muted small mb-2 d-flex align-items-center gap-2">
+                                <i class="fa-solid fa-retweet text-primary"></i> Compartido por
+                                <strong>${pub.compartido_por}</strong> 
+                                <img src="${imgCompartido}" class="rounded-circle" width="24" height="24" style="object-fit: cover;" alt="Img compartido">
+                            </div>`;
+                    }                    
+    
+                    let comentarioCompartido = '';
+                    if (pub.comentario_compartido) {
+                        comentarioCompartido = `
+                            <p class="fst-italic text-secondary mb-2">${pub.comentario_compartido}</p>`;
+                    }
+    
                     const html = `
                         <div id="publicacion-${pub.id}" class="post mb-4 position-relative p-3 rounded shadow-sm bg-white">
-                            <!-- Dropdown editar/eliminar -->
                             ${pub.es_mia ? `
                             <div class="dropdown position-absolute top-0 end-0 m-2">
                                 <button class="btn btn-light btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
                                     <i class="fa-solid fa-ellipsis"></i>
                                 </button>
                                 <ul class="dropdown-menu">
+                                    ${pub.es_mia && !pub.es_compartida ? `
                                     <li><a class="dropdown-item" onclick="activarEdicionInline(${pub.id})">Editar</a></li>
-                                    <li><a class="dropdown-item text-danger" onclick="eliminarPublicacion(${pub.id})">Eliminar</a></li>
+                                    ` : ''}
+                                    <li><a class="dropdown-item text-danger" onclick="eliminarPublicacion(${pub.es_compartida ? pub.id_compartida : pub.id}, ${pub.es_compartida})"
+                                    >Eliminar</a></li>
                                 </ul>
-                            </div>
-                            ` : ''}
+                            </div>` : ''}
     
-                            <!-- Autor -->
+                            <!-- Compartido por -->
+                            ${compartidoHeader}
+    
+                            <!-- Autor original -->
                             <div class="post-author d-flex align-items-center mb-2">
                                 <img src="${imgProfileSrc}" class="img-profile" alt="User">
                                 <div class="post-info ms-2">
                                     <h5 class="mb-0">
                                         <a href="/profile/view/${pub.autor_id}/" class="text-decoration-none text-dark">${pub.nombre}</a>
                                     </h5>
-                                    <small class="text-muted d-block">Founder and CEO at Giva | Angel Investor</small>
                                     <small class="text-muted">${pub.fecha}</small>
                                 </div>
                             </div>
     
-                            <!-- Descripción -->
+                            <!-- Comentario al compartir -->
+                            ${comentarioCompartido}
+    
+                            <!-- Descripción original -->
                             <p class="mt-2 descripcion-publicacion">${pub.descripcion}</p>
     
                             <!-- Imagen -->
@@ -87,7 +127,7 @@
                                 </div>
                                 <div>
                                     ${pub.comentarios_count > 0 ? `
-                                       <span style="cursor:pointer;" onclick="toggleComentarios(${pub.id})">
+                                        <span style="cursor:pointer;" onclick="toggleComentarios(${pub.id})">
                                             ${pub.comentarios_count} ${pub.comentarios_count === 1 ? 'comentario' : 'comentarios'}
                                         </span>` : ''}
                                 </div>
@@ -104,19 +144,77 @@
                                 <div class="post-activity-link" onclick="mostrarFormularioComentario(${pub.id})">
                                     <i class="fa-regular fa-comment me-1"></i>&nbsp;Comment
                                 </div>
-                                <div class="post-activity-link"><i class="fa-solid fa-share me-1"></i>&nbsp;Share</div>
+                                <div class="post-activity-link" onclick="compartirPublicacion(${pub.id})">
+                                    <i class="fa-solid fa-share me-1"></i>&nbsp;Share
+                                </div>
                                 <div class="post-activity-link"><i class="fa-solid fa-paper-plane me-1"></i>&nbsp;Send</div>
                             </div>
     
-                            <!-- Aquí los comentarios se cargarán -->
+                            <!-- Comentarios -->
                             <div id="comentarios-publicacion-${pub.id}" class="comentarios-container border-top mt-3 pt-3"></div>
                         </div>
                     `;
     
                     contenedor.innerHTML += html;
                 });
-            });
+    
+                offset += publicaciones.length;
+            })
+            .finally(() => cargando = false);
     }
+    
+    function compartirPublicacion(publicacionId) {
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+    
+        Swal.fire({
+            title: '¿Compartir publicación?',
+            input: 'textarea',
+            inputLabel: 'Comentario (opcional)',
+            inputPlaceholder: 'Agrega un comentario al compartir...',
+            showCancelButton: true,
+            confirmButtonText: 'Compartir',
+            cancelButtonText: 'Cancelar',
+            confirmButtonColor: '#0d6efd'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                const formData = new FormData();
+                formData.append('publicacion_id', publicacionId);
+                formData.append('comentario', result.value || '');
+                formData.append('es_publico', true);
+    
+                fetch('/api/publicaciones/compartir/', {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': csrfToken
+                    },
+                    body: formData
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        Swal.fire({
+                            title: 'Compartido',
+                            icon: 'success',
+                            timer: 1200,
+                            showConfirmButton: false
+                        });
+    
+                        // Reiniciar y recargar publicaciones
+                        offset = 0;
+                        finDePublicaciones = false;
+                        document.getElementById('mensaje-fin').style.display = 'none';
+                        cargarPublicaciones(window.usuarioId, false);
+                    } else {
+                        Swal.fire('Error', 'No se pudo compartir la publicación.', 'error');
+                    }
+                })
+                .catch(err => {
+                    console.error("Error al compartir publicación:", err);
+                    Swal.fire('Error', 'Ocurrió un error inesperado.', 'error');
+                });
+            }
+        });
+    }    
 
     function mostrarFormularioComentario(publicacionId) {
         const contenedor = document.getElementById(`comentarios-publicacion-${publicacionId}`);
@@ -236,7 +334,7 @@
                                             <i class="fa-solid fa-ellipsis-vertical"></i>
                                         </button>
                                         <ul class="dropdown-menu dropdown-menu-end" style="z-index: 9999;">
-                                            <a class="dropdown-item"  onclick="activarEdicionComentario(${comentario.comentario_id}, '${comentario.contenido.replace(/'/g, "\\'")}')">Editar</a>
+                                            <a class="dropdown-item" onclick="activarEdicionComentario(${comentario.comentario_id}, \`${comentario.contenido.replace(/`/g, '\\`').replace(/\\/g, '\\\\')}\`, ${publicacionId})">Editar</a>
                                             <li><a class="dropdown-item text-danger" onclick="eliminarComentario(${comentario.comentario_id}, ${publicacionId})">Eliminar</a></li>
                                         </ul>
                                     </div>
@@ -261,7 +359,7 @@
             });
     }
 
-    function activarEdicionComentario(comentarioId, contenido) {
+    function activarEdicionComentario(comentarioId, contenido, publicacionId) {
         const comentarioDiv = document.getElementById(`comentario-${comentarioId}`);
         if (!comentarioDiv) {
             console.error('No se encontró el contenedor del comentario:', comentarioId);
@@ -271,11 +369,15 @@
         comentarioDiv.innerHTML = `
             <textarea class="form-control mb-2" id="textarea-editar-comentario-${comentarioId}" rows="2">${contenido}</textarea>
             <div class="d-flex gap-2 mb-3">
-                <button class="btn btn-sm btn-primary" onclick="guardarEdicionComentario(${comentarioId})">Guardar</button>
-                <button class="btn btn-sm btn-secondary" onclick="cancelarEdicionComentario(${comentarioId}, '${contenido.replace(/'/g, "\\'")}')">Cancelar</button>
+                <button class="btn btn-sm btn-primary" onclick="guardarEdicionComentario(${comentarioId}, ${publicacionId})">Guardar</button>
+                <button class="btn btn-sm btn-secondary" onclick="cancelarEdicionComentario(${comentarioId}, \`${contenido.replace(/`/g, '\\`')}\`, ${publicacionId})">Cancelar</button>
             </div>
         `;
     }
+    
+    function cancelarEdicionComentario(comentarioId, contenidoOriginal, publicacionId) {
+        cargarComentarios(publicacionId);
+    }    
     
     function guardarEdicionComentario(comentarioId) {
         const textarea = document.getElementById(`textarea-editar-comentario-${comentarioId}`);
@@ -308,10 +410,7 @@
             console.error("Error al editar comentario:", err);
         });
     }
-    
-    function cancelarEdicionComentario(comentarioId, contenidoOriginal) {
-        cargarComentarios(obtenerPublicacionIdDesdeComentario(comentarioId)); // o recarga entera
-    }    
+      
     function eliminarComentario(comentarioId, publicacionId) {
         Swal.fire({
             title: '¿Eliminar comentario?',
@@ -364,15 +463,26 @@
         .then(res => res.json())
         .then(data => {
             if (data.success) {
-                // Solo actualizar el botón visualmente
+                // Actualizar botón y contador visualmente
                 actualizarBotonLike(publicacionId, data.liked);
-                cargarPublicaciones(window.usuarioId); // Recargar publicaciones para actualizar el contador de likes
+    
+                // Actualizar texto de likes y usuarios que dieron like (opcional)
+                const likeText = document.querySelector(`#publicacion-${publicacionId} .liked-users`);
+                if (likeText && data.likes_count !== undefined) {
+                    if (data.likes_count > 0) {
+                        likeText.innerHTML = `
+                            ${data.usuarios_like.join(', ')}${data.likes_count > 3 ? ` y ${data.likes_count - 3} más les gusta esto` : ''}
+                        `;
+                    } else {
+                        likeText.innerHTML = '';
+                    }
+                }
             }
         })
         .catch(err => {
             console.error("Error al dar/quitar like:", err);
         });
-    }
+    }    
     
     function actualizarBotonLike(id, liked) {
         const likeBtn = document.getElementById(`btn-like-${id}`);
@@ -392,9 +502,8 @@
         likeBtn.setAttribute('data-ya-dio-like', liked ? 'true' : 'false');
     }
      
-
     // Función para eliminar publicación
-    function eliminarPublicacion(publicacionId) {
+    function eliminarPublicacion(publicacionId, esCompartida = false) {
         Swal.fire({
             title: '¿Eliminar publicación?',
             text: "Esta acción no se puede deshacer",
@@ -407,8 +516,11 @@
         }).then((result) => {
             if (result.isConfirmed) {
                 const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+                const url = esCompartida 
+                    ? `/api/publicaciones_compartidas/${publicacionId}/eliminar/`
+                    : `/api/publicaciones/${publicacionId}/eliminar/`;
     
-                fetch(`/api/publicaciones/${publicacionId}/eliminar/`, {
+                fetch(url, {
                     method: 'DELETE',
                     headers: {
                         'X-CSRFToken': csrfToken
@@ -424,9 +536,13 @@
                             timer: 1000,
                             showConfirmButton: false
                         });
-                        cargarPublicaciones(window.usuarioId); // Recargar publicaciones
+    
+                        offset = 0;
+                        finDePublicaciones = false;
+                        document.getElementById('mensaje-fin').style.display = 'none';
+                        cargarPublicaciones(window.usuarioId, false);
                     } else {
-                        Swal.fire('Error', 'No se pudo eliminar la publicación.', 'error');
+                        Swal.fire('Error', data.message || 'No se pudo eliminar la publicación.', 'error');
                     }
                 })
                 .catch(err => {
@@ -506,7 +622,11 @@
         .then(res => res.json())
         .then(data => {
             if (data.success) {
-                cargarPublicaciones(window.usuarioId); // Recarga publicaciones después de guardar
+                // Reiniciar paginación y recargar desde el inicio
+                offset = 0;
+                finDePublicaciones = false;
+                document.getElementById('mensaje-fin').style.display = 'none';
+                cargarPublicaciones(window.usuarioId, false); 
             } else {
                 alert("Error al editar publicación");
             }
@@ -514,7 +634,7 @@
         .catch(err => {
             console.error("Error al actualizar publicación:", err);
         });
-    }    
+    }        
     
     // Función para cancelar edición inline
     function cancelarEdicionInline(publicacionId, descripcionOriginal) {
@@ -536,37 +656,60 @@
     const textarea = form.querySelector("textarea");
     const imagenInput = form.querySelector('input[type="file"]');
     const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+    const previewContenedor = document.getElementById("preview-imagen");
+    const previewImagen = document.getElementById("preview-img");
 
-    form.addEventListener("submit", function (e) {
-        e.preventDefault();
+    imagenInput.addEventListener("change", function () {
+    const archivo = this.files[0];
 
-        const formData = new FormData();
-        formData.append("descripcion", textarea.value);
-        formData.append("es_publico", true); 
-        if (imagenInput.files.length > 0) {
-            formData.append("imagen", imagenInput.files[0]);
+    if (archivo) {
+        const lector = new FileReader();
+
+        lector.onload = function (e) {
+            previewImagen.src = e.target.result;
+            previewContenedor.style.display = "block";
+        };
+
+        lector.readAsDataURL(archivo);
+        } else {
+            previewImagen.src = "";
+            previewContenedor.style.display = "none";
         }
-
-        fetch("/api/publicaciones/nueva/", {
-            method: "POST",
-            headers: {
-                "X-CSRFToken": csrfToken
-            },
-            body: formData
-        })
-        .then(res => res.json())
-        .then(data => {
-            if (data.success) {
-                textarea.value = "";
-                imagenInput.value = "";
-                cargarPublicaciones(window.usuarioId); // Recarga publicaciones
-            } else {
-                alert("Error al publicar");
-            }
-        })
-        .catch(err => {
-            console.error("Error al enviar publicación:", err);
-        });
     });
 
+form.addEventListener("submit", function (e) {
+    e.preventDefault();
 
+    const formData = new FormData();
+    formData.append("descripcion", textarea.value);
+    formData.append("es_publico", true); 
+    if (imagenInput.files.length > 0) {
+        formData.append("imagen", imagenInput.files[0]);
+    }
+
+    fetch("/api/publicaciones/nueva/", {
+        method: "POST",
+        headers: {
+            "X-CSRFToken": csrfToken
+        },
+        body: formData
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            textarea.value = "";
+            imagenInput.value = "";
+
+            // Reiniciar paginación y recargar desde cero
+            offset = 0;
+            finDePublicaciones = false;
+            document.getElementById('mensaje-fin').style.display = 'none';
+            cargarPublicaciones(window.usuarioId, false); 
+        } else {
+            alert("Error al publicar");
+        }
+    })
+    .catch(err => {
+        console.error("Error al enviar publicación:", err);
+    });
+});

@@ -64,6 +64,16 @@ class Publicacion(models.Model):
     class Meta:
         ordering = ['-fecha_creacion']
 
+class PublicacionCompartida(models.Model):
+    usuario = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='publicaciones_compartidas')
+    publicacion_original = models.ForeignKey('Publicacion', on_delete=models.CASCADE, related_name='compartidas')
+    fecha_compartida = models.DateTimeField(auto_now_add=True)
+    comentario = models.TextField(blank=True, null=True)  # Comentario del usuario al compartir
+    es_publico = models.BooleanField(default=True)
+
+    def __str__(self):
+        return f"{self.usuario.usuario} compartió publicación {self.publicacion_original.id}"
+
 class SolicitudAmistad(models.Model):
     de_usuario = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -153,3 +163,28 @@ class Comentario(models.Model):
 
     class Meta:
         ordering = ['-fecha_creacion']
+
+class Trabajo(models.Model):
+    autor = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='trabajos_publicados')
+    titulo = models.CharField(max_length=255)
+    descripcion = models.TextField()
+    ubicacion = models.CharField(max_length=255, blank=True, null=True)
+    modalidad = models.CharField(max_length=50, choices=[('remoto', 'Remoto'), ('presencial', 'Presencial'), ('híbrido', 'Híbrido')])
+    fecha_publicacion = models.DateTimeField(auto_now_add=True)
+    fecha_actualizacion = models.DateTimeField(auto_now=True)
+    activo = models.BooleanField(default=True)
+
+    def __str__(self):
+        return f"{self.titulo} - {self.autor.usuario}"
+    
+class Postulacion(models.Model):
+    trabajo = models.ForeignKey(Trabajo, on_delete=models.CASCADE, related_name='postulaciones')
+    usuario = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='postulaciones')
+    mensaje = models.TextField(blank=True)
+    fecha_postulacion = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('trabajo', 'usuario')  # Un usuario no puede postularse dos veces al mismo trabajo
+
+    def __str__(self):
+        return f"{self.usuario.usuario} → {self.trabajo.titulo}"

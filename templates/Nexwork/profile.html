@@ -39,18 +39,45 @@
 		</div>
 
 		<!-- Botón de contacto escritorio: esquina inferior derecha -->
+		{% if request.user != usuario %}
 		<div class="position-absolute bottom-0 end-0 mb-3 me-4 d-none d-md-block">
-			<button class="btn btn-primary rounded-pill d-flex align-items-center px-3 py-2 shadow">
-				<i class="fa-solid fa-user-plus me-2"></i> Contacto
-			</button>
+			{% if ya_son_amigos %}
+				<button id="btn-contacto" class="btn btn-primary rounded-pill d-flex align-items-center px-3 py-2 shadow" disabled>
+					<i class="fa-solid fa-user-check me-2"></i> Conectados
+				</button>
+			{% elif solicitud_pendiente %}
+				<button id="btn-contacto" class="btn btn-primary rounded-pill d-flex align-items-center px-3 py-2 shadow" disabled>
+					<i class="fa-solid fa-clock me-2"></i> Pendiente
+				</button>
+			{% else %}
+				<button id="btn-contacto" class="btn btn-primary rounded-pill d-flex align-items-center px-3 py-2 shadow"
+						onclick="enviarSolicitudAmistad({{ usuario.id }})">
+					<i class="fa-solid fa-user-plus me-2"></i> Contacto
+				</button>
+			{% endif %}
 		</div>
+		{% endif %}
 
 		<!-- Botón de contacto móvil: centrado encima de la imagen -->
+		{% if request.user != usuario %}
 		<div class="position-absolute start-50 translate-middle-x d-block d-md-none" style="top: 87%;">
-			<button class="btn btn-primary rounded-pill d-flex align-items-center px-4 py-2 shadow">
-				<i class="fa-solid fa-user-plus me-2"></i> Contacto
-			</button>
+			{% if ya_son_amigos %}
+				<button id="btn-contacto" class="btn btn-primary rounded-pill d-flex align-items-center px-3 py-2 shadow" disabled>
+					<i class="fa-solid fa-user-check me-2"></i> Conectados
+				</button>
+			{% elif solicitud_pendiente %}
+				<button id="btn-contacto" class="btn btn-primary rounded-pill d-flex align-items-center px-3 py-2 shadow" disabled>
+					<i class="fa-solid fa-clock me-2"></i> Pendiente
+				</button>
+			{% else %}
+				<button id="btn-contacto" class="btn btn-primary rounded-pill d-flex align-items-center px-4 py-2 shadow"
+						onclick="enviarSolicitudAmistad({{ usuario.id }})">
+					<i class="fa-solid fa-user-plus me-2"></i> Contacto
+				</button>
+			{% endif %}
 		</div>
+		{% endif %}
+
 
 	</div>
 
@@ -95,9 +122,14 @@
 			</div>
 		</div>
 	
-		<!-- 📝 Columna central: publicaciones -->
-		<div class="col-md-6" id="contenedor-publicaciones">
-			<!-- Aquí se cargarán publicaciones dinámicamente -->
+		<!-- Columna central -->
+		<div class="col-md-6">
+			<div id="contenedor-publicaciones">
+				<!-- Aquí se cargarán publicaciones dinámicamente -->
+			</div>
+			<div id="mensaje-fin" class="text-center text-muted my-4" style="display: none;">
+				<i class="fa-solid fa-circle-check me-2 text-success"></i>Estás al día
+			</div>		
 		</div>
 	
 		<!-- 🎓 Columna derecha: experiencia y educación -->
@@ -147,13 +179,26 @@
 
 	<script src="{% static 'js/Nexwork/publicaciones.js' %}"></script>
 
-		<!-- Finalmente, código adicional opcional -->
-<script>
-	document.addEventListener('DOMContentLoaded', function () {
-		mostrarPlaceholdersPublicaciones(2);
-		cargarPublicaciones(window.usuarioId);
-	});
-</script>
+	<!-- Finalmente, código adicional opcional -->
+	<script>
+		window.offset ??= 0;
+		window.limit ??= 5;
+		window.cargando ??= false;
+		window.finDePublicaciones ??= false;
+	
+		document.addEventListener('DOMContentLoaded', function () {
+			mostrarPlaceholdersPublicaciones(2);
+			cargarPublicaciones(window.usuarioId);
+	
+			window.addEventListener('scroll', function () {
+				if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight - 500) {
+					cargarPublicaciones(window.usuarioId, true);
+				}
+			});
+		});
+	</script>
+	
+	<script src="{% static 'js/Nexwork/profile.js' %}"></script>
 
 </div>
 {% endblock %}

@@ -1,0 +1,15 @@
+{% extends 'Nexwork/layouts/layoutHome.html' %}
+{% load static %}
+{% block title %}NewWorks{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <h3 class="fw-bold mb-4"><i class="fa-solid fa-briefcase me-2 text-primary"></i> Oportunidades laborales</h3>
+
+    <div class="row" id="contenedor-trabajos">
+        <!-- Aquí se cargarán los trabajos por AJAX -->
+    </div>
+</div>
+
+<script src="{% static 'js/Nexwork/trabajos.js' %}"></script>
+{% endblock %}

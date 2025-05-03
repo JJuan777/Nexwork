@@ -72,6 +72,8 @@
                 <form id="form-publicacion" class="mb-4">
                     {% csrf_token %}
                     <div class="card p-3">
+                
+                        <!-- Usuario e input -->
                         <div class="d-flex align-items-start gap-2 mb-2">
                             {% if request.user.img_profile %}
                                 <img src="{{ request.user.img_profile|to_base64 }}" class="rounded-circle" width="50" height="50" style="object-fit: cover;">
@@ -80,6 +82,13 @@
                             {% endif %}
                             <textarea rows="2" class="form-control" placeholder="Escribe algo..."></textarea>
                         </div>
+                
+                        <!-- Preview de imagen -->
+                        <div id="preview-imagen" class="mb-3 ms-5" style="display: none;">
+                            <img id="preview-img" src="" class="img-fluid rounded" style="max-height: 200px; object-fit: cover;">
+                        </div>
+                
+                        <!-- Botones -->
                         <div class="d-flex justify-content-between align-items-center mt-2">
                             <label class="btn btn-light btn-sm d-flex align-items-center gap-1">
                                 <i class="fa-solid fa-image text-primary"></i> Imagen
@@ -92,7 +101,8 @@
                                 <i class="fa-solid fa-calendar-days text-primary"></i> Evento
                             </span>
                             <button type="submit" class="btn btn-primary btn-sm">Publicar</button>
-                        </div> 
+                        </div>
+                
                     </div>
                 </form>
 
@@ -100,8 +110,13 @@
                     <p class="mb-0">Sort by: <span class="text-primary">Top <img src="{% static 'images/down-arrow.png' %}" width="10"></span></p>
                 </div>
 
+                <!-- PUBLICACIONES -->
                 <div id="contenedor-publicaciones"></div>
 
+                <div id="mensaje-fin" class="text-center text-muted my-4" style="display: none;">
+                    <i class="fa-solid fa-circle-check me-2 text-success"></i>Estás al día
+                </div>
+                
             </div>
         </div>
 
@@ -159,13 +174,18 @@
 </div>
 
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        
+    document.addEventListener('DOMContentLoaded', function () {
         mostrarPlaceholdersPublicaciones(2);
-
-        cargarPublicaciones(); // sin ID => carga publicaciones de amigos y propias
+        cargarPublicaciones(); // primera carga
+    
+        window.addEventListener('scroll', function () {
+            if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight - 500) {
+                cargarPublicaciones(null, true); // cargar más sin limpiar
+            }
+        });
     });
-</script>
+    </script>
+    
 
 <script src="{% static 'js/Nexwork/publicaciones.js' %}"></script>
 {% endblock %}

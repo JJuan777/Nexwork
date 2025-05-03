@@ -10,11 +10,13 @@ from django.views.decorators.http import require_http_methods
 from django.templatetags.static import static
 from django.utils.timezone import now
 from .models import Usuario
-from .models import Publicacion, Amistad, Like, Comentario
+from .models import Publicacion, Amistad, Like, Comentario, PublicacionCompartida, SolicitudAmistad
+from .models import Trabajo, Postulacion
 import json
 from django.db.models import Q
 import base64
 from django.contrib.auth.decorators import login_required
+from django.core.paginator import Paginator
 
 # Create your views here.
 @login_required
@@ -40,88 +42,116 @@ def login_auth(request):
 
     return JsonResponse({'success': False, 'message': 'Método no permitido'}, status=405)
 
+def formatear_fecha_relativa(fecha):
+    diferencia = now() - fecha
+
+    if diferencia.total_seconds() < 60:
+        return "Hace un momento"
+    elif diferencia.total_seconds() < 3600:
+        minutos = int(diferencia.total_seconds() // 60)
+        return f"Hace {minutos} minuto{'s' if minutos != 1 else ''}"
+    elif diferencia.total_seconds() < 86400:
+        horas = int(diferencia.total_seconds() // 3600)
+        return f"Hace {horas} hora{'s' if horas != 1 else ''}"
+    elif diferencia.total_seconds() < 604800:
+        dias = int(diferencia.total_seconds() // 86400)
+        return f"Hace {dias} día{'s' if dias != 1 else ''}"
+    elif diferencia.total_seconds() < 2592000:
+        semanas = int(diferencia.total_seconds() // 604800)
+        return f"Hace {semanas} semana{'s' if semanas != 1 else ''}"
+    else:
+        return DateFormat(fecha).format('d M Y H:i')
+
 def publicaciones_publicas(request):
     usuario = request.user
     user_id = request.GET.get('id')
+    offset = int(request.GET.get('offset', 0))
+    limit = int(request.GET.get('limit', 5))
+
+    publicaciones_data = []
 
     if user_id:
         publicaciones = Publicacion.objects.select_related('autor') \
             .filter(autor_id=user_id) \
             .order_by('-fecha_creacion')
+
+        compartidas = PublicacionCompartida.objects.select_related('usuario', 'publicacion_original', 'publicacion_original__autor') \
+            .filter(usuario_id=user_id, es_publico=True) \
+            .order_by('-fecha_compartida')
     else:
         amistades = Amistad.objects.filter(Q(usuario1=usuario) | Q(usuario2=usuario))
-        amigos_ids = set()
-        for amistad in amistades:
-            if amistad.usuario1_id == usuario.id:
-                amigos_ids.add(amistad.usuario2_id)
-            else:
-                amigos_ids.add(amistad.usuario1_id)
-
+        amigos_ids = {
+            amistad.usuario2_id if amistad.usuario1_id == usuario.id else amistad.usuario1_id
+            for amistad in amistades
+        }
         amigos_ids.add(usuario.id)
 
         publicaciones = Publicacion.objects.select_related('autor') \
             .filter(autor_id__in=amigos_ids) \
             .order_by('-fecha_creacion')
 
-    data = []
+        compartidas = PublicacionCompartida.objects.select_related('usuario', 'publicacion_original', 'publicacion_original__autor') \
+            .filter(usuario_id__in=amigos_ids, es_publico=True) \
+            .order_by('-fecha_compartida')
 
-    for pub in publicaciones:
-        imagen_base64 = None
-        if pub.imagen:
-            imagen_base64 = f"data:image/jpeg;base64,{base64.b64encode(pub.imagen).decode()}"
-        
-        if pub.autor.img_profile:
-            img_profile = f"data:image/jpeg;base64,{base64.b64encode(pub.autor.img_profile).decode()}"
-        else:
-            img_profile = static('images/Nexwork/default-profile.png')
+    # Combinar ambas listas y ordenarlas por fecha (fecha_creacion o fecha_compartida)
+    items = [
+        {"tipo": "original", "obj": p, "fecha": p.fecha_creacion} for p in publicaciones
+    ] + [
+        {"tipo": "compartida", "obj": pc, "fecha": pc.fecha_compartida} for pc in compartidas
+    ]
 
-        # NUEVO: calcular like y likes count
-        ya_dio_like = Like.objects.filter(usuario=usuario, publicacion=pub).exists()
-        likes_count = pub.likes.count()
+    items.sort(key=lambda x: x['fecha'], reverse=True)
+    items = items[offset:offset + limit]
 
-        # NUEVO: obtener nombres de usuarios que dieron like
-        usuarios_like = list(pub.likes.all().values_list('usuario__nombre', flat=True)[:3])
+    for item in items:
+        if item['tipo'] == 'original':
+            pub = item['obj']
+            autor = pub.autor
+        else:  # compartida
+            pc = item['obj']
+            pub = pc.publicacion_original
+            autor = pc.usuario  # quien compartió
 
-        # NUEVO: contar comentarios
-        comentarios_count = pub.comentarios.count()
+        imagen_base64 = (
+            f"data:image/jpeg;base64,{base64.b64encode(pub.imagen).decode()}"
+            if pub.imagen else None
+        )
 
-        ahora = now()
-        diferencia = ahora - pub.fecha_creacion
+        img_profile_autor_original = (
+            f"data:image/jpeg;base64,{base64.b64encode(pub.autor.img_profile).decode()}"
+            if pub.autor.img_profile else static('images/Nexwork/default-profile.png')
+        )
 
-        if diferencia.total_seconds() < 60:
-            fecha_formateada = "Hace un momento"
-        elif diferencia.total_seconds() < 3600:
-            minutos = int(diferencia.total_seconds() // 60)
-            fecha_formateada = f"Hace {minutos} minuto{'s' if minutos != 1 else ''}"
-        elif diferencia.total_seconds() < 86400:
-            horas = int(diferencia.total_seconds() // 3600)
-            fecha_formateada = f"Hace {horas} hora{'s' if horas != 1 else ''}"
-        elif diferencia.total_seconds() < 604800:
-            dias = int(diferencia.total_seconds() // 86400)
-            fecha_formateada = f"Hace {dias} día{'s' if dias != 1 else ''}"
-        elif diferencia.total_seconds() < 2592000:
-            semanas = int(diferencia.total_seconds() // 604800)
-            fecha_formateada = f"Hace {semanas} semana{'s' if semanas != 1 else ''}"
-        else:
-            fecha_formateada = DateFormat(pub.fecha_creacion).format('d M Y H:i')
+        img_profile_compartido_por = (
+            f"data:image/jpeg;base64,{base64.b64encode(autor.img_profile).decode()}"
+            if autor.img_profile else static('images/Nexwork/default-profile.png')
+        )
 
-        data.append({
+        publicaciones_data.append({
             'id': pub.id,
             'autor_id': pub.autor.id,
             'autor': pub.autor.usuario,
             'nombre': f"{pub.autor.nombre} {pub.autor.apellidos}",
-            'fecha': fecha_formateada,
+            'fecha': formatear_fecha_relativa(item['fecha']),
             'descripcion': pub.descripcion,
             'imagen': imagen_base64,
-            'img_profile': img_profile,
+            'img_profile_autor_original': img_profile_autor_original,
+            'img_profile_compartido_por': img_profile_compartido_por,
             'es_mia': pub.autor_id == usuario.id,
-            'ya_dio_like': ya_dio_like,
-            'likes_count': likes_count,
-            'usuarios_like': usuarios_like,
-            'comentarios_count': comentarios_count,
+            'ya_dio_like': Like.objects.filter(usuario=usuario, publicacion=pub).exists(),
+            'likes_count': pub.likes.count(),
+            'usuarios_like': list(pub.likes.all().values_list('usuario__nombre', flat=True)[:3]),
+            'comentarios_count': pub.comentarios.count(),
+            'es_compartida': item['tipo'] == 'compartida',
+            'compartido_por': f"{autor.nombre} {autor.apellidos}" if item['tipo'] == 'compartida' else None,
+            'comentario_compartido': item['obj'].comentario if item['tipo'] == 'compartida' else None,
+            'id_compartida': item['obj'].id if item['tipo'] == 'compartida' else None,
+            'autor_compartida_id': autor.id if item['tipo'] == 'compartida' else None,
+
         })
 
-    return JsonResponse({'publicaciones': data})
+    return JsonResponse({'publicaciones': publicaciones_data})
 
 @csrf_exempt
 @require_POST
@@ -161,6 +191,19 @@ def eliminar_publicacion(request, id):
         return JsonResponse({'success': True})
     except Publicacion.DoesNotExist:
         return JsonResponse({'success': False, 'message': 'No encontrada'}, status=404)
+
+@csrf_exempt
+@require_http_methods(["DELETE"])
+def eliminar_publicacion_compartida(request, id):
+    if not request.user.is_authenticated:
+        return JsonResponse({'success': False}, status=401)
+
+    try:
+        pc = PublicacionCompartida.objects.get(id=id, usuario=request.user)
+        pc.delete()
+        return JsonResponse({'success': True})
+    except PublicacionCompartida.DoesNotExist:
+        return JsonResponse({'success': False, 'message': 'Publicación compartida no encontrada'}, status=404)
 
 @csrf_exempt
 def nueva_publicacion(request):
@@ -302,6 +345,7 @@ def nuevo_comentario(request, publicacion_id):
 
 def profile_view(request, id):
     usuario = get_object_or_404(Usuario, id=id)
+    actual = request.user
 
     # Imagen de perfil
     if usuario.img_profile:
@@ -309,16 +353,34 @@ def profile_view(request, id):
     else:
         img_profile = static('images/Nexwork/default-profile.png')
 
-    # Banner del perfil
+    # Banner
     if usuario.banner_profile:
         banner_profile = f"data:image/jpeg;base64,{base64.b64encode(usuario.banner_profile).decode()}"
     else:
         banner_profile = static('images/Nexwork/banner_default2.png')
 
+    # Verificar estado de amistad (solo si no es su propio perfil)
+    ya_son_amigos = False
+    solicitud_pendiente = False
+
+    if actual.is_authenticated and actual != usuario:
+        ya_son_amigos = Amistad.objects.filter(
+            Q(usuario1=actual, usuario2=usuario) |
+            Q(usuario1=usuario, usuario2=actual)
+        ).exists()
+
+        solicitud_pendiente = SolicitudAmistad.objects.filter(
+            de_usuario=actual,
+            para_usuario=usuario,
+            estado='pendiente'
+        ).exists()
+
     return render(request, 'Nexwork/profile.html', {
         'usuario': usuario,
         'img_profile': img_profile,
         'banner_profile': banner_profile,
+        'ya_son_amigos': ya_son_amigos,
+        'solicitud_pendiente': solicitud_pendiente,
     })
 
 @csrf_exempt
@@ -354,3 +416,78 @@ def actualizar_banner_profile(request, id):
         return JsonResponse({'success': True, 'banner_profile': banner_base64})
 
     return JsonResponse({'success': False, 'error': 'No se envió banner'}, status=400)
+
+@require_POST
+@login_required
+def compartir_publicacion(request):
+    publicacion_id = request.POST.get('publicacion_id')
+    comentario = request.POST.get('comentario', '').strip()
+    es_publico = request.POST.get('es_publico') == 'true'
+
+    try:
+        original = Publicacion.objects.get(pk=publicacion_id)
+        PublicacionCompartida.objects.create(
+            usuario=request.user,
+            publicacion_original=original,
+            comentario=comentario,
+            es_publico=es_publico
+        )
+        return JsonResponse({'success': True})
+    except Publicacion.DoesNotExist:
+        return JsonResponse({'success': False, 'error': 'Publicación no encontrada'})
+
+@require_POST
+@login_required
+def enviar_solicitud_amistad(request):
+    data = json.loads(request.body)
+    para_usuario_id = data.get('para_usuario_id')
+
+    if not para_usuario_id or int(para_usuario_id) == request.user.id:
+        return JsonResponse({'success': False, 'message': 'Solicitud inválida'})
+
+    try:
+        para_usuario = Usuario.objects.get(id=para_usuario_id)
+
+        if Amistad.objects.filter(
+            Q(usuario1=request.user, usuario2=para_usuario) |
+            Q(usuario1=para_usuario, usuario2=request.user)
+        ).exists():
+            return JsonResponse({'success': False, 'message': 'Ya son amigos'})
+
+        SolicitudAmistad.objects.get_or_create(
+            de_usuario=request.user,
+            para_usuario=para_usuario,
+            defaults={'estado': 'pendiente'}
+        )
+
+        return JsonResponse({'success': True})
+
+    except Usuario.DoesNotExist:
+        return JsonResponse({'success': False, 'message': 'Usuario no encontrado'})
+
+def trabajos_view(request):
+    return render(request, 'Nexwork/trabajos.html') 
+
+def trabajos_api(request):
+    trabajos = Trabajo.objects.select_related('autor').filter(activo=True).order_by('-fecha_publicacion')
+    
+    data = []
+    for t in trabajos:
+        if t.autor.img_profile:
+            img_profile = f"data:image/jpeg;base64,{base64.b64encode(t.autor.img_profile).decode()}"
+        else:
+            img_profile = static('images/Nexwork/default-profile.png')
+
+        data.append({
+            'id': t.id,
+            'titulo': t.titulo,
+            'descripcion': t.descripcion[:150] + ("..." if len(t.descripcion) > 150 else ""),
+            'ubicacion': t.ubicacion,
+            'modalidad': t.modalidad.title(),
+            'fecha': t.fecha_publicacion.strftime('%d %b %Y'),
+            'autor_id': t.autor.id,
+            'autor_nombre': f"{t.autor.nombre} {t.autor.apellidos}",
+            'img_profile': img_profile,
+        })
+
+    return JsonResponse({'trabajos': data})
