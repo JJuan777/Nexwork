@@ -55,3 +55,108 @@ function enviarSolicitudAmistad(paraUsuarioId) {
         });
     });
 }
+
+document.addEventListener('DOMContentLoaded', function () {
+    const imgContainer = document.getElementById('profile-img-wrapper');
+    const fileInput = document.getElementById('input-img-profile');
+    const imgElement = document.getElementById('img-profile');
+
+    const usuarioId = window.usuarioId;  // Asegúrate que esté disponible
+
+    imgContainer.addEventListener('click', () => {
+        fileInput.click();
+    });
+
+    fileInput.addEventListener('change', function () {
+        const file = this.files[0];
+        if (!file) return;
+
+        const formData = new FormData();
+        formData.append('imagen', file);
+
+        fetch(`/api/usuario/${usuarioId}/actualizar_img/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCSRFToken(),
+            },
+            body: formData
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                imgElement.src = data.img_profile;
+            } else {
+                alert('Error: ' + data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Error al subir imagen:', error);
+            alert('Error al subir la imagen');
+        });
+    });
+
+    // Obtener CSRF desde cookie
+    function getCSRFToken() {
+        const name = 'csrftoken';
+        const cookies = document.cookie.split(';');
+        for (let c of cookies) {
+            c = c.trim();
+            if (c.startsWith(name + '=')) {
+                return c.substring(name.length + 1);
+            }
+        }
+        return '';
+    }
+});
+
+const bannerBtn = document.getElementById('btn-banner-upload');
+const bannerInput = document.getElementById('input-banner-profile');
+const bannerImg = document.getElementById('img-banner');
+
+const usuarioId = window.usuarioId;  // Asegúrate que esté disponible en el template
+
+// Al hacer clic en el ícono
+bannerBtn.addEventListener('click', () => {
+    bannerInput.click();
+});
+
+// Al seleccionar imagen
+bannerInput.addEventListener('change', function () {
+    const file = this.files[0];
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append('imagen', file);
+
+    fetch(`/api/usuario/${usuarioId}/actualizar_banner/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': getCSRFToken(),
+        },
+        body: formData
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            bannerImg.src = data.banner_profile;
+        } else {
+            alert('Error: ' + data.error);
+        }
+    })
+    .catch(error => {
+        console.error('Error al subir banner:', error);
+        alert('Error al subir el banner');
+    });
+});
+
+function getCSRFToken() {
+    const name = 'csrftoken';
+    const cookies = document.cookie.split(';');
+    for (let c of cookies) {
+        c = c.trim();
+        if (c.startsWith(name + '=')) {
+            return c.substring(name.length + 1);
+        }
+    }
+    return '';
+}

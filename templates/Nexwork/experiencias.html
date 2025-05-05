@@ -1,0 +1,100 @@
+{% extends 'Nexwork/layouts/layoutHome.html' %}
+{% load static %}
+{% block title %}Experiencia {{ usuario.nombre }}{% endblock %}
+{% block content %}
+<div class="container py-4" id="contenedor-perfil" data-es-propietario="{% if request.user == usuario %}true{% else %}false{% endif %}">
+
+	<div class="row d-flex w-100 g-4">
+
+        <!-- Columna lateral -->
+        <div class="col-md-4">
+            <div class="card shadow-sm rounded-4 p-4 text-center h-100">
+                <div class="d-flex justify-content-center mb-3">
+                    <img src="{{ img_profile }}" class="rounded-circle shadow" width="100" height="100" style="object-fit: cover;">
+                </div>
+                <h5 class="fw-bold mb-0">
+					<a href="{% url 'profile' usuario.id %}" class="text-decoration-none text-dark">
+						{{ usuario.nombre }} {{ usuario.apellidos }}
+					</a>
+				</h5>				
+                <p class="text-muted mb-1">@{{ usuario.usuario }}</p>
+                {% if request.user == usuario %}
+                <button class="btn btn-outline-primary btn-sm mt-2" data-bs-toggle="modal" data-bs-target="#modalNuevaExperiencia">
+                    <i class="fa-solid fa-plus me-1"></i> Nueva experiencia
+                </button>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Columna principal con experiencias -->
+        <div class="col flex-grow-1">
+            <div class="card shadow rounded-4 h-100 w-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                        <i class="bi bi-briefcase-fill fs-4 text-primary me-2"></i>
+                        <h5 class="fw-bold mb-0">Experiencia profesional</h5>
+                    </div>
+
+                    <div id="contenedor-experiencias">
+                        <p class="text-muted">Cargando experiencias...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+
+<!-- Modal -->
+<div class="modal fade" id="modalNuevaExperiencia" tabindex="-1" aria-labelledby="modalNuevaLabel" aria-hidden="true">
+	<div class="modal-dialog">
+		<div class="modal-content rounded-4">
+			<div class="modal-header">
+				<h5 class="modal-title fw-bold" id="modalNuevaLabel">Nueva experiencia</h5>
+				<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+			</div>
+			<div class="modal-body">
+				<form id="form-nueva-experiencia">
+					<div class="mb-2">
+						<label class="form-label">Puesto</label>
+						<input type="text" class="form-control" name="puesto" required>
+					</div>
+					<div class="mb-2">
+						<label class="form-label">Empresa</label>
+						<input type="text" class="form-control" name="empresa" required>
+					</div>
+					<div class="mb-2">
+						<label class="form-label">Fecha inicio</label>
+						<input type="date" class="form-control" name="fecha_inicio" required>
+					</div>
+					<div class="mb-2">
+						<label class="form-label">Fecha fin (opcional)</label>
+						<input type="date" class="form-control" name="fecha_fin">
+					</div>
+					<div class="mb-2">
+						<label class="form-label">Tecnologías (máx 5, separadas por coma)</label>
+						<input type="text" class="form-control" name="tecnologias">
+					</div>
+					<div class="mb-2">
+						<label class="form-label">Descripción (opcional)</label>
+						<textarea class="form-control" name="descripcion" rows="3"></textarea>
+					</div>
+					<button type="submit" class="btn btn-success w-100 mt-2">
+						<i class="fa-solid fa-check me-1"></i> Guardar
+					</button>
+				</form>
+			</div>
+		</div>
+	</div>
+</div>
+<div id="contenedor-perfil" data-es-propietario="{% if request.user.id == usuario.id %}true{% else %}false{% endif %}"></div>
+
+
+
+<script>
+    window.usuarioId = {{ usuario.id }};
+</script>
+<script src="{% static 'js/Nexwork/experiencias.js' %}"></script>
+
+{% endblock %}

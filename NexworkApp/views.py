@@ -11,6 +11,8 @@ from django.templatetags.static import static
 from django.utils.timezone import now
 from .models import Usuario
 from .models import Publicacion, Amistad, Like, Comentario, PublicacionCompartida, SolicitudAmistad
+from .models import ExperienciaLaboral, Educacion
+from django.utils.dateparse import parse_date
 from .models import Trabajo, Postulacion
 import json
 from django.db.models import Q
@@ -359,21 +361,55 @@ def profile_view(request, id):
     else:
         banner_profile = static('images/Nexwork/banner_default2.png')
 
-    # Verificar estado de amistad (solo si no es su propio perfil)
+
+    todas_experiencias = usuario.experiencias.order_by('-fecha_inicio')
+    experiencias = todas_experiencias[:2]
+    hay_mas_experiencias = todas_experiencias.count() > 2
+
+    # Preprocesar tecnologías
+    for exp in experiencias:
+        if exp.tecnologias:
+            exp.tecnologias_lista = [tag.strip() for tag in exp.tecnologias.split(',')]
+        else:
+            exp.tecnologias_lista = []
+
+    # Cargar educación (máximo 2 registros)
+    educaciones = usuario.educacion.all()[:2]
+    hay_mas_educacion = usuario.educacion.count() > 2
+
+    # Preprocesar áreas de estudio
+    for edu in educaciones:
+        if edu.areas_estudio:
+            edu.areas_estudio_lista = [tag.strip() for tag in edu.areas_estudio.split(',')]
+        else:
+            edu.areas_estudio_lista = []
+
+
+    # Inicializar variables
     ya_son_amigos = False
     solicitud_pendiente = False
+    contactos = []
 
-    if actual.is_authenticated and actual != usuario:
-        ya_son_amigos = Amistad.objects.filter(
-            Q(usuario1=actual, usuario2=usuario) |
-            Q(usuario1=usuario, usuario2=actual)
-        ).exists()
+    if actual.is_authenticated:
+        # Verificar estado de amistad si es otro perfil
+        if actual != usuario:
+            ya_son_amigos = Amistad.objects.filter(
+                Q(usuario1=actual, usuario2=usuario) |
+                Q(usuario1=usuario, usuario2=actual)
+            ).exists()
 
-        solicitud_pendiente = SolicitudAmistad.objects.filter(
-            de_usuario=actual,
-            para_usuario=usuario,
-            estado='pendiente'
-        ).exists()
+            solicitud_pendiente = SolicitudAmistad.objects.filter(
+                de_usuario=actual,
+                para_usuario=usuario,
+                estado='pendiente'
+            ).exists()
+
+        # Obtener contactos del usuario visitado (máximo 5)
+        amistades = Amistad.objects.filter(Q(usuario1=usuario) | Q(usuario2=usuario))[:5]
+        contactos = [
+            a.usuario2 if a.usuario1 == usuario else a.usuario1
+            for a in amistades
+        ]
 
     return render(request, 'Nexwork/profile.html', {
         'usuario': usuario,
@@ -381,6 +417,12 @@ def profile_view(request, id):
         'banner_profile': banner_profile,
         'ya_son_amigos': ya_son_amigos,
         'solicitud_pendiente': solicitud_pendiente,
+        'contactos': contactos,
+        'experiencias': experiencias,
+        'hay_mas_experiencias': hay_mas_experiencias,
+        'educaciones': educaciones,
+        'hay_mas_educacion': hay_mas_educacion,
+
     })
 
 @csrf_exempt
@@ -491,3 +533,229 @@ def trabajos_api(request):
         })
 
     return JsonResponse({'trabajos': data})
+
+def experiencias_usuario(request, id):
+    usuario = get_object_or_404(Usuario, id=id)
+
+    if usuario.img_profile:
+        img_profile = f"data:image/jpeg;base64,{base64.b64encode(usuario.img_profile).decode()}"
+    else:
+        img_profile = static('images/Nexwork/default-profile.png')
+
+    return render(request, 'Nexwork/experiencias.html', {
+        'usuario': usuario,
+        'img_profile': img_profile
+    })
+
+def api_experiencias_usuario(request, id):
+    usuario = get_object_or_404(Usuario, id=id)
+    experiencias = usuario.experiencias.order_by('-fecha_inicio')
+
+    datos = []
+    for exp in experiencias:
+        tecnologias = [tag.strip() for tag in exp.tecnologias.split(',')] if exp.tecnologias else []
+        datos.append({
+            'id': exp.id, 
+            'puesto': exp.puesto,
+            'empresa': exp.empresa,
+            'fecha_inicio': exp.fecha_inicio.strftime('%b %Y'),
+            'fecha_fin': exp.fecha_fin.strftime('%Y') if exp.fecha_fin else 'Presente',
+            'tecnologias': tecnologias,
+            'descripcion': exp.descripcion or ""
+        })
+
+    return JsonResponse({'experiencias': datos})
+
+@csrf_exempt
+@require_POST
+def actualizar_experiencia(request, id):
+    try:
+        experiencia = ExperienciaLaboral.objects.get(id=id)
+        if experiencia.usuario != request.user:
+            return JsonResponse({'success': False, 'error': 'No autorizado'}, status=403)
+
+        data = json.loads(request.body)
+
+        # Validar que fecha_inicio esté presente
+        fecha_inicio = data.get('fecha_inicio')
+        if not fecha_inicio:
+            return JsonResponse({'success': False, 'error': 'La fecha de inicio es obligatoria.'}, status=400)
+
+        fecha_fin = data.get('fecha_fin')
+
+        experiencia.puesto = data.get('puesto', experiencia.puesto)
+        experiencia.empresa = data.get('empresa', experiencia.empresa)
+        experiencia.descripcion = data.get('descripcion', experiencia.descripcion)
+        experiencia.fecha_inicio = parse_date(fecha_inicio)
+        experiencia.fecha_fin = parse_date(fecha_fin) if fecha_fin else None
+
+        # Validar tecnologías
+        tecnologias = data.get('tecnologias', [])
+        if len(tecnologias) > 5:
+            return JsonResponse({'success': False, 'error': 'Máximo 5 tecnologías permitidas.'}, status=400)
+
+        experiencia.tecnologias = ", ".join(tecnologias)
+        experiencia.save()
+
+        return JsonResponse({'success': True})
+
+    except ExperienciaLaboral.DoesNotExist:
+        return JsonResponse({'success': False, 'error': 'Experiencia no encontrada.'}, status=404)
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+@csrf_exempt
+@require_POST
+def nueva_experiencia(request, id):
+    try:
+        usuario = get_object_or_404(Usuario, id=id)
+        if usuario != request.user:
+            return JsonResponse({'success': False, 'error': 'No autorizado'}, status=403)
+
+        data = json.loads(request.body)
+
+        if not data.get('fecha_inicio'):
+            return JsonResponse({'success': False, 'error': 'Fecha de inicio obligatoria'}, status=400)
+
+        tecnologias = data.get('tecnologias', [])
+        if len(tecnologias) > 5:
+            return JsonResponse({'success': False, 'error': 'Máximo 5 tecnologías'}, status=400)
+
+        ExperienciaLaboral.objects.create(
+            usuario=usuario,
+            puesto=data.get('puesto'),
+            empresa=data.get('empresa'),
+            fecha_inicio=parse_date(data.get('fecha_inicio')),
+            fecha_fin=parse_date(data.get('fecha_fin')) if data.get('fecha_fin') else None,
+            descripcion=data.get('descripcion', ''),
+            tecnologias=", ".join(tecnologias)
+        )
+
+        return JsonResponse({'success': True})
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+@csrf_exempt
+@require_http_methods(["DELETE"])
+def eliminar_experiencia(request, id):
+    try:
+        experiencia = ExperienciaLaboral.objects.get(id=id)
+        if experiencia.usuario != request.user:
+            return JsonResponse({'success': False, 'error': 'No autorizado'}, status=403)
+        experiencia.delete()
+        return JsonResponse({'success': True})
+    except ExperienciaLaboral.DoesNotExist:
+        return JsonResponse({'success': False, 'error': 'Experiencia no encontrada'}, status=404)
+
+def educacion_usuario(request, id):
+    usuario = get_object_or_404(Usuario, id=id)
+    
+    if usuario.img_profile:
+        img_profile = f"data:image/jpeg;base64,{base64.b64encode(usuario.img_profile).decode()}"
+    else:
+        img_profile = static('images/Nexwork/default-profile.png')
+
+    return render(request, 'Nexwork/educacion.html', {
+        'usuario': usuario,
+        'img_profile': img_profile
+    })
+
+def api_educacion_usuario(request, id):
+    usuario = get_object_or_404(Usuario, id=id)
+    educaciones = usuario.educacion.all()  # ← correcto uso del related_name
+
+    data = []
+    for edu in educaciones:
+        areas = [tag.strip() for tag in edu.areas_estudio.split(',')] if edu.areas_estudio else []
+        data.append({
+            'id': edu.id,
+            'titulo': edu.titulo,
+            'institucion': edu.institucion,
+            'fecha_inicio': edu.fecha_inicio.strftime('%Y'),
+            'fecha_fin': edu.fecha_fin.strftime('%Y') if edu.fecha_fin else 'Presente',
+            'areas': areas
+        })
+
+    return JsonResponse({'educaciones': data})
+
+@csrf_exempt
+@require_POST
+def actualizar_educacion(request, id):
+    try:
+        educacion = Educacion.objects.get(id=id)
+        if educacion.usuario != request.user:
+            return JsonResponse({'success': False, 'error': 'No autorizado'}, status=403)
+
+        data = json.loads(request.body)
+        educacion.titulo = data.get('titulo', educacion.titulo)
+        educacion.institucion = data.get('institucion', educacion.institucion)
+
+        fecha_inicio = data.get('fecha_inicio')
+        fecha_fin = data.get('fecha_fin')
+
+        if fecha_inicio:
+            educacion.fecha_inicio = parse_date(fecha_inicio)
+        if fecha_fin:
+            educacion.fecha_fin = parse_date(fecha_fin)
+        else:
+            educacion.fecha_fin = None
+
+        areas = data.get('areas', [])
+        if len(areas) > 5:
+            return JsonResponse({'success': False, 'error': 'Máximo 5 áreas de estudio'}, status=400)
+        educacion.areas_estudio = ', '.join(areas)
+
+        educacion.save()
+        return JsonResponse({'success': True})
+
+    except Educacion.DoesNotExist:
+        return JsonResponse({'success': False, 'error': 'No existe'}, status=404)
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+    
+@csrf_exempt
+@require_http_methods(['DELETE'])
+def eliminar_educacion(request, id):
+    try:
+        educacion = Educacion.objects.get(id=id)
+        if educacion.usuario != request.user:
+            return JsonResponse({'success': False, 'error': 'No autorizado'}, status=403)
+        educacion.delete()
+        return JsonResponse({'success': True})
+    except Educacion.DoesNotExist:
+        return JsonResponse({'success': False, 'error': 'No existe'}, status=404)
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+    
+@csrf_exempt
+@require_POST
+def crear_educacion(request, id):
+    try:
+        usuario = Usuario.objects.get(id=id)
+        if usuario != request.user:
+            return JsonResponse({'success': False, 'error': 'No autorizado'}, status=403)
+
+        data = json.loads(request.body)
+        titulo = data.get('titulo')
+        institucion = data.get('institucion')
+        fecha_inicio = parse_date(data.get('fecha_inicio'))
+        fecha_fin = parse_date(data.get('fecha_fin')) if data.get('fecha_fin') else None
+        areas = [a.strip() for a in data.get('areas_estudio', '').split(',') if a.strip()]
+        if len(areas) > 5:
+            return JsonResponse({'success': False, 'error': 'Máximo 5 áreas de estudio'}, status=400)
+
+        Educacion.objects.create(
+            usuario=usuario,
+            titulo=titulo,
+            institucion=institucion,
+            fecha_inicio=fecha_inicio,
+            fecha_fin=fecha_fin,
+            areas_estudio=", ".join(areas)
+        )
+
+        return JsonResponse({'success': True})
+
+    except Usuario.DoesNotExist:
+        return JsonResponse({'success': False, 'error': 'Usuario no encontrado'}, status=404)
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)

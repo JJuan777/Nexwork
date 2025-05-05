@@ -27,6 +27,23 @@ urlpatterns = [
     path('profile/view/<int:id>/', views.profile_view, name='profile'),
     path('api/usuario/<int:id>/actualizar_img/', views.actualizar_img_profile, name='actualizar_img_profile'),
     path('api/usuario/<int:id>/actualizar_banner/', views.actualizar_banner_profile, name='actualizar_banner_profile'),
+            #experiencias
+    path('profile/<int:id>/experiencias/', views.experiencias_usuario, name='profile_experiencias'),
+    path('api/usuario/<int:id>/experiencias/', views.api_experiencias_usuario, name='api_experiencias_usuario'),
+    path('api/experiencia/<int:id>/actualizar/', views.actualizar_experiencia, name='actualizar_experiencia'),
+    path('api/usuario/<int:id>/experiencias/nueva/', views.nueva_experiencia, name='nueva_experiencia'),
+    path('api/experiencia/<int:id>/eliminar/', views.eliminar_experiencia, name='eliminar_experiencia'),
+            #educacion
+    path('profile/<int:id>/educacion/', views.educacion_usuario, name='educacion_usuario'),
+    path('api/usuario/<int:id>/educacion/', views.api_educacion_usuario, name='api_educacion_usuario'),
+    path('api/educacion/<int:id>/actualizar/', views.actualizar_educacion, name='actualizar_educacion'),
+    path('api/educacion/<int:id>/eliminar/', views.eliminar_educacion, name='eliminar_educacion'),
+    path('api/usuario/<int:id>/educacion/crear/', views.crear_educacion, name='crear_educacion'),
+
+
+
+
+
 
     path('newworks/', views.trabajos_view, name='trabajos'),
     path('api/trabajos/', views.trabajos_api, name='api_trabajos'),

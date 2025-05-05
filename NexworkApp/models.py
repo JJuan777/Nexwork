@@ -24,6 +24,8 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
     correo = models.EmailField(unique=True)
     usuario = models.CharField(max_length=50, unique=True)
 
+    ocupacion = models.CharField(max_length=100, blank=True, null=True)  # <--- nuevo campo
+
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
     reset_password = models.BooleanField(default=False)
@@ -188,3 +190,32 @@ class Postulacion(models.Model):
 
     def __str__(self):
         return f"{self.usuario.usuario} → {self.trabajo.titulo}"
+
+class ExperienciaLaboral(models.Model):
+    usuario = models.ForeignKey('Usuario', on_delete=models.CASCADE, related_name='experiencias')
+    puesto = models.CharField(max_length=100)
+    empresa = models.CharField(max_length=100)
+    fecha_inicio = models.DateField()
+    fecha_fin = models.DateField(null=True, blank=True)
+    descripcion = models.TextField(blank=True)  # Opcional
+    tecnologias = models.CharField(max_length=255, blank=True)  # Ej: Python, Django, APIs
+
+    class Meta:
+        ordering = ['-fecha_inicio']
+
+    def __str__(self):
+        return f"{self.puesto} en {self.empresa}"
+
+class Educacion(models.Model):
+    usuario = models.ForeignKey('Usuario', on_delete=models.CASCADE, related_name='educacion')
+    titulo = models.CharField(max_length=100)
+    institucion = models.CharField(max_length=100)
+    fecha_inicio = models.DateField()
+    fecha_fin = models.DateField(null=True, blank=True)
+    areas_estudio = models.CharField(max_length=255, blank=True)  # Ej: Bases de Datos, Redes, Programación
+
+    class Meta:
+        ordering = ['-fecha_inicio']
+
+    def __str__(self):
+        return f"{self.titulo} - {self.institucion}"

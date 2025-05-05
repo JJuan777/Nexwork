@@ -1,13 +1,13 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
-from .models import Usuario, Rol, Publicacion, SolicitudAmistad, Amistad, Like, Comentario, PublicacionCompartida
+from .models import Usuario, Rol, Publicacion, SolicitudAmistad, Amistad, Like, Comentario, PublicacionCompartida, ExperienciaLaboral,Educacion
 from .models import Trabajo, Postulacion
 
 
 class UsuarioAdmin(BaseUserAdmin):
-    list_display = ('id', 'usuario', 'nombre', 'apellidos', 'correo', 'is_active', 'is_staff')
+    list_display = ('id', 'usuario', 'nombre', 'apellidos', 'correo', 'ocupacion', 'is_active', 'is_staff')
     list_filter = ('is_active', 'is_staff', 'reset_password')
-    search_fields = ('usuario', 'correo', 'nombre', 'apellidos')
+    search_fields = ('usuario', 'correo', 'nombre', 'apellidos', 'ocupacion')
     ordering = ('id',)
     filter_horizontal = ()
 
@@ -15,7 +15,7 @@ class UsuarioAdmin(BaseUserAdmin):
         (None, {'fields': ('usuario', 'password')}),
         ('Información personal', {
             'fields': (
-                'nombre', 'apellidos', 'correo', 'telefono', 'rol',
+                'nombre', 'apellidos', 'correo', 'telefono', 'ocupacion', 'rol',
             )
         }),
         ('Permisos', {
@@ -30,7 +30,7 @@ class UsuarioAdmin(BaseUserAdmin):
         (None, {
             'classes': ('wide',),
             'fields': (
-                'usuario', 'nombre', 'apellidos', 'correo', 'telefono', 'rol',
+                'usuario', 'nombre', 'apellidos', 'correo', 'telefono', 'ocupacion', 'rol',
                 'password1', 'password2',
                 'is_active', 'is_staff', 'is_superuser'
             ),
@@ -101,11 +101,23 @@ class PostulacionAdmin(admin.ModelAdmin):
     list_filter = ('fecha_postulacion',)
     ordering = ('-fecha_postulacion',)
 
+class ExperienciaLaboralAdmin(admin.ModelAdmin):
+    list_display = ('id', 'usuario', 'puesto', 'empresa', 'fecha_inicio', 'fecha_fin')
+    search_fields = ('usuario__usuario', 'empresa', 'puesto')
+    list_filter = ('empresa', 'fecha_inicio', 'fecha_fin')
+    ordering = ('-fecha_inicio',)
 
+class EducacionAdmin(admin.ModelAdmin):
+    list_display = ('id', 'usuario', 'titulo', 'institucion', 'fecha_inicio', 'fecha_fin')
+    search_fields = ('usuario__usuario', 'titulo', 'institucion')
+    list_filter = ('institucion', 'fecha_inicio', 'fecha_fin')
+    ordering = ('-fecha_inicio',)
 
 # Registro de modelos
 admin.site.register(Usuario, UsuarioAdmin)
 admin.site.register(PublicacionCompartida, PublicacionCompartidaAdmin)
+admin.site.register(ExperienciaLaboral, ExperienciaLaboralAdmin)
+admin.site.register(Educacion, EducacionAdmin)
 admin.site.register(Trabajo, TrabajoAdmin)
 admin.site.register(Postulacion, PostulacionAdmin)
 admin.site.register(Like, LikeAdmin)

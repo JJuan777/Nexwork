@@ -75,3 +75,24 @@
     box-shadow: none;
 }
 
+/* Hover solo para imagen de perfil */
+.hover-opacity-transition {
+    transition: opacity 0.3s ease;
+}
+
+#profile-img-wrapper:hover .hover-opacity-transition {
+    opacity: 1 !important;
+}
+
+.contenedor-fluid-full {
+	width: 100%;
+	padding-left: 2rem;
+	padding-right: 2rem;
+}
+
+@media (max-width: 768px) {
+	.contenedor-fluid-full {
+		padding-left: 1rem;
+		padding-right: 1rem;
+	}
+}
