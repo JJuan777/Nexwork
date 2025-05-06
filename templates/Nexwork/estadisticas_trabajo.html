@@ -1,0 +1,100 @@
+{% extends 'Nexwork/layouts/layoutHome.html' %}
+{% load static %}
+{% block title %}Estadísticas de {{ trabajo.titulo }}{% endblock %}
+
+{% block content %}
+<div class="contenedor-fluid-full py-4">
+
+    <!-- Encabezado -->
+    <div class="card shadow-sm border-0 rounded-4 mb-4">
+        <div class="card-body d-flex align-items-center">
+            <img src="{{ img_profile }}" class="rounded-circle me-3 shadow-sm" width="60" height="60" style="object-fit: cover;">
+            <div>
+                <h5 class="fw-bold mb-0">{{ trabajo.titulo }}</h5>
+                <small class="text-muted">
+                    Publicado por {{ trabajo.autor.nombre }} {{ trabajo.autor.apellidos }} <br>
+                    <i class="fa-solid fa-location-dot me-1 text-primary"></i> {{ trabajo.ubicacion }},
+                    <span class="badge bg-light text-dark">{{ trabajo.modalidad|title }}</span>
+                </small>
+            </div>
+        </div>
+    </div>
+
+    <!-- Métricas -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-4">
+            <div class="card text-center shadow-sm rounded-4">
+                <div class="card-body">
+                    <h6 class="text-muted">Total de vistas</h6>
+                    <h3 class="fw-bold text-primary">{{ total_vistas }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-center shadow-sm rounded-4">
+                <div class="card-body">
+                    <h6 class="text-muted">Postulaciones</h6>
+                    <h3 class="fw-bold text-success">{{ total_postulaciones }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-center shadow-sm rounded-4">
+                <div class="card-body">
+                    <h6 class="text-muted">Tasa de conversión</h6>
+                    <h3 class="fw-bold text-warning">{{ conversion_rate }}%</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filtros -->
+    <form id="filtro-form" class="mb-4">
+        <div class="row g-2 align-items-end">
+            <div class="col-md-3">
+                <label class="form-label">Desde fecha:</label>
+                <input type="date" id="input-fecha" class="form-control">
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Países (coma separados):</label>
+                <input type="text" id="input-paises" class="form-control" placeholder="México, Colombia">
+            </div>
+            <div class="col-md-2">
+                <button class="btn btn-primary w-100" type="submit">Filtrar</button>
+            </div>
+        </div>
+    </form>
+
+    <!-- Gráfico y etiquetas -->
+    <div class="card shadow-sm border-0 rounded-4">
+        <div class="card-body">
+            <div class="row">
+                <!-- Gráfico -->
+                <div class="col-md-7 seccion-grafico mb-4 mb-md-0">
+                    <h6 class="fw-semibold mb-3"><i class="fa-solid fa-chart-column me-2 text-primary"></i> Vistas por país</h6>
+                    <canvas id="graficoPaises" width="400" height="200"></canvas>
+                </div>
+
+                <!-- Etiquetas -->
+                <div class="col-md-5">
+                    <h6 class="fw-semibold">Países</h6>
+                    <div id="etiquetas-paises" class="d-flex flex-wrap gap-2 mb-3 seccion-etiquetas"></div>
+
+                    <h6 class="fw-semibold">Estados</h6>
+                    <div id="etiquetas-estados" class="d-flex flex-wrap gap-2 mb-3 seccion-etiquetas"></div>
+
+                    <h6 class="fw-semibold">Ciudades</h6>
+                    <div id="etiquetas-ciudades" class="d-flex flex-wrap gap-2 seccion-etiquetas"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    const trabajoId = {{ trabajo.id }};
+</script>
+<script src="{% static 'js/Nexwork/estadisticas_trabajo.js' %}"></script>
+  
+{% endblock %}

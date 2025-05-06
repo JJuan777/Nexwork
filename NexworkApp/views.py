@@ -10,6 +10,7 @@ from django.views.decorators.http import require_http_methods
 from django.templatetags.static import static
 from django.contrib.auth import logout
 from django.utils.timezone import now
+from datetime import timedelta
 from .models import Usuario
 from .models import Publicacion, Amistad, Like, Comentario, PublicacionCompartida, SolicitudAmistad
 from .models import ExperienciaLaboral, Educacion
@@ -17,17 +18,21 @@ from django.utils.dateparse import parse_date
 from .models import Trabajo, Postulacion
 import json
 from django.db.models import Q
-import base64
+import base64, requests
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 from django.db import models
 from django.db.models import Count
+from .models import VistaTrabajo
 
 
 # Create your views here.
 @login_required
 def home_view(request):
-    return render(request, 'Nexwork/index.html') 
+    trabajos = Trabajo.objects.filter(activo=True).select_related('autor').order_by('-fecha_publicacion')[:2]
+    return render(request, 'Nexwork/index.html', {
+        'trabajos_recientes': trabajos
+    })
 
 def login_view(request):
     return render(request, 'Nexwork/auth/login.html') 
@@ -817,6 +822,32 @@ def postularse_trabajo(request, id):
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)}, status=500)
     
+def get_client_ip(request):
+    """Obtiene la IP del cliente"""
+    x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+    if x_forwarded_for:
+        ip = x_forwarded_for.split(',')[0]
+    else:
+        ip = request.META.get('REMOTE_ADDR')
+    return ip
+
+
+def geolocalizar_ip(ip):
+    """Consulta geolocalización básica por IP"""
+    try:
+        response = requests.get(f'https://ipapi.co/{ip}/json/')
+        if response.status_code == 200:
+            data = response.json()
+            return {
+                'ciudad': data.get('city'),
+                'estado': data.get('region'),
+                'pais': data.get('country_name'),
+            }
+    except:
+        pass
+    return {'ciudad': None, 'estado': None, 'pais': None}
+
+
 @login_required
 def trabajo_detalle_view(request, id):
     trabajo = get_object_or_404(Trabajo.objects.select_related('autor'), pk=id, activo=True)
@@ -827,6 +858,30 @@ def trabajo_detalle_view(request, id):
         img_profile = static('images/Nexwork/default-profile.png')
 
     ya_postulado = Postulacion.objects.filter(trabajo=trabajo, usuario=request.user).exists()
+
+    ip = get_client_ip(request)
+    user_agent = request.META.get('HTTP_USER_AGENT', '')
+
+    # ⚠️ Evita múltiples registros en ventana de 30 min
+    ventana = now() - timedelta(minutes=30)
+    ya_existe = VistaTrabajo.objects.filter(
+        trabajo=trabajo,
+        usuario=request.user,
+        ip=ip,
+        fecha__gte=ventana
+    ).exists()
+
+    if not ya_existe:
+        geo = geolocalizar_ip(ip)
+        VistaTrabajo.objects.create(
+            trabajo=trabajo,
+            usuario=request.user,
+            ip=ip,
+            user_agent=user_agent,
+            ciudad=geo['ciudad'],
+            estado=geo['estado'],
+            pais=geo['pais']
+        )
 
     return render(request, 'Nexwork/trabajo_detalle.html', {
         'trabajo': trabajo,
@@ -954,3 +1009,71 @@ def postulaciones_recibidas_view(request, id):
         'trabajo': trabajo,
         'img_profile': img_profile
     })
+
+@login_required
+def estadisticas_trabajo_view(request, id):
+    trabajo = get_object_or_404(Trabajo.objects.select_related('autor'), pk=id, activo=True)
+
+    if trabajo.autor.img_profile:
+        img_profile = f"data:image/jpeg;base64,{base64.b64encode(trabajo.autor.img_profile).decode()}"
+    else:
+        img_profile = static('images/Nexwork/default-profile.png')
+
+    total_vistas = trabajo.vistas.count()
+    total_postulaciones = trabajo.postulaciones.count()
+    conversion_rate = round((total_postulaciones / total_vistas) * 100, 2) if total_vistas > 0 else 0
+
+    return render(request, 'Nexwork/estadisticas_trabajo.html', {
+        'trabajo': trabajo,
+        'img_profile': img_profile,
+        'total_vistas': total_vistas,
+        'total_postulaciones': total_postulaciones,
+        'conversion_rate': conversion_rate,
+    })
+
+@login_required
+def vistas_por_pais_api(request, id):
+    trabajo = get_object_or_404(Trabajo, pk=id, activo=True)
+
+    # Filtros GET
+    fecha_inicio = request.GET.get('fecha_inicio')
+    paises_param = request.GET.get('paises')  # lista de países separados por comas
+    pais_filtro = request.GET.get('pais')     # filtro por un solo país
+    estado_filtro = request.GET.get('estado')
+    ciudad_filtro = request.GET.get('ciudad')
+
+    vistas = trabajo.vistas.all()
+
+    # Filtro por fecha
+    if fecha_inicio:
+        fecha_obj = parse_date(fecha_inicio)
+        if fecha_obj:
+            vistas = vistas.filter(fecha__date__gte=fecha_obj)
+
+    # Filtro por varios países (coma separados)
+    if paises_param:
+        paises_lista = [p.strip() for p in paises_param.split(',')]
+        vistas = vistas.filter(pais__in=paises_lista)
+
+    # Filtros individuales
+    if pais_filtro:
+        vistas = vistas.filter(pais__iexact=pais_filtro)
+    if estado_filtro:
+        vistas = vistas.filter(estado__iexact=estado_filtro)
+    if ciudad_filtro:
+        vistas = vistas.filter(ciudad__iexact=ciudad_filtro)
+
+    # Agrupaciones
+    def agrupar_por(campo):
+        return list(
+            vistas.values(campo)
+            .annotate(total=Count('id'))
+            .order_by('-total')
+        )
+
+    data = {
+        'paises': agrupar_por('pais'),
+        'estados': agrupar_por('estado'),
+        'ciudades': agrupar_por('ciudad'),
+    }
+    return JsonResponse(data)

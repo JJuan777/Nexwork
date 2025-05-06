@@ -50,6 +50,8 @@ urlpatterns = [
     path('api/mis-ofertas/', views.mis_ofertas_api, name='api_mis_ofertas'),
     path('api/postulaciones/<int:trabajo_id>/usuarios/', views.postulaciones_usuarios_api, name='postulaciones_usuarios_api'),
     path('newworks/postulaciones/<int:id>/', views.postulaciones_recibidas_view, name='postulaciones_recibidas_view'),
+    path('estadisticas/view/<int:id>/', views.estadisticas_trabajo_view, name='estadisticas_trabajo_view'),
+    path('api/vistas-por-pais/<int:id>/', views.vistas_por_pais_api, name='vistas_por_pais_api'),
 
 
 

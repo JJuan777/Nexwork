@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from .models import Usuario, Rol, Publicacion, SolicitudAmistad, Amistad, Like, Comentario, PublicacionCompartida, ExperienciaLaboral,Educacion
-from .models import Trabajo, Postulacion, TrabajoDetalle
+from .models import Trabajo, Postulacion, TrabajoDetalle, VistaTrabajo
 
 
 class UsuarioAdmin(BaseUserAdmin):
@@ -141,11 +141,24 @@ class TrabajoDetalleAdmin(admin.ModelAdmin):
     )
     ordering = ('-fecha_limite',)
 
+class VistaTrabajoAdmin(admin.ModelAdmin):
+    list_display = (
+        'id', 'trabajo', 'usuario', 'ip', 'ciudad', 'estado', 'pais', 'fecha'
+    )
+    search_fields = (
+        'trabajo__titulo', 'usuario__usuario', 'ip', 'user_agent', 'ciudad', 'estado', 'pais'
+    )
+    list_filter = ('trabajo', 'fecha', 'pais', 'estado')
+    ordering = ('-fecha',)
+
+
+
 # Registro de modelos
 admin.site.register(Usuario, UsuarioAdmin)
 admin.site.register(PublicacionCompartida, PublicacionCompartidaAdmin)
 admin.site.register(ExperienciaLaboral, ExperienciaLaboralAdmin)
 admin.site.register(TrabajoDetalle, TrabajoDetalleAdmin)
+admin.site.register(VistaTrabajo, VistaTrabajoAdmin)
 admin.site.register(Educacion, EducacionAdmin)
 admin.site.register(Trabajo, TrabajoAdmin)
 admin.site.register(Postulacion, PostulacionAdmin)

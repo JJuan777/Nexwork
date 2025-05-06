@@ -207,6 +207,19 @@ class TrabajoDetalle(models.Model):
     def __str__(self):
         return f"Detalle del trabajo: {self.trabajo.titulo}"
     
+class VistaTrabajo(models.Model):
+    trabajo = models.ForeignKey(Trabajo, on_delete=models.CASCADE, related_name='vistas')
+    usuario = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True)
+    ip = models.GenericIPAddressField(null=True, blank=True)
+    user_agent = models.TextField(blank=True)
+    fecha = models.DateTimeField(auto_now_add=True)
+    ciudad = models.CharField(max_length=100, blank=True, null=True)
+    estado = models.CharField(max_length=100, blank=True, null=True)
+    pais = models.CharField(max_length=100, blank=True, null=True)
+
+    def __str__(self):
+        return f"{self.trabajo} visto por {self.usuario or self.ip}"
+    
 class Postulacion(models.Model):
     trabajo = models.ForeignKey(Trabajo, on_delete=models.CASCADE, related_name='postulaciones')
     usuario = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='postulaciones')

@@ -125,22 +125,45 @@
             <div class="right-sidebar">
                 <div class="sidebar-news mb-4">
                     <img src="{% static 'images/more.png' %}" class="info-icon float-end" width="20">
-                    <h6>Trending News</h6>
-
-                    <a href="#">High Demand for Skilled Employees</a>
-                    <small class="text-muted d-block">1d ago · 10,934 readers</small>
-
-                    <a href="#">Inflation in Canada Affects the Workforce</a>
-                    <small class="text-muted d-block">2d ago · 7,043 readers</small>
-
-                    <a href="#">Mass Recruiters fire Employees</a>
-                    <small class="text-muted d-block">4d ago · 17,789 readers</small>
-
-                    <a href="#">Crypto predicted to Boom this year</a>
-                    <small class="text-muted d-block">9d ago · 2,436 readers</small>
-
-                    <a href="#" class="read-more-link d-block mt-2">Read More</a>
-                </div>
+                    <h6 class="mb-3 text-dark"><i class="fa-solid fa-briefcase me-2 text-primary"></i>Trabajos Recientes</h6>
+                
+                    {% for trabajo in trabajos_recientes %}
+                        <div class="d-flex align-items-start mb-3 p-2 rounded bg-light border-start border-3 border-primary-subtle">
+                            <!-- Miniatura del autor -->
+                            <div class="me-3">
+                                {% if trabajo.autor.img_profile %}
+                                    <img src="{{ trabajo.autor.img_profile|to_base64 }}" 
+                                         class="rounded-circle border border-2 {% if trabajo.fecha_publicacion|date:'U' >= now|date:'U'|add:'-172800' %}border-success{% else %}border-secondary{% endif %}" 
+                                         width="45" height="45" style="object-fit: cover;">
+                                {% else %}
+                                    <img src="{% static 'images/Nexwork/default-profile.png' %}" 
+                                         class="rounded-circle border border-2 border-secondary" 
+                                         width="45" height="45" style="object-fit: cover;">
+                                {% endif %}
+                            </div>
+                
+                            <!-- Detalles del trabajo -->
+                            <div class="flex-grow-1">
+                                <a href="{% url 'trabajo_detalle' trabajo.id %}" 
+                                    class="fw-semibold text-dark text-truncate d-block mb-1 text-decoration-none" 
+                                    title="{{ trabajo.titulo }}">
+                                        {{ trabajo.titulo }}
+                                </a>
+                                <small class="text-muted d-block">
+                                    <i class="fa-solid fa-location-dot me-1"></i> {{ trabajo.ubicacion|default:"Ubicación no especificada" }}<br>
+                                    <i class="fa-solid fa-laptop me-1"></i> {{ trabajo.modalidad|title }} · 
+                                    <i class="fa-regular fa-calendar-days me-1"></i> {{ trabajo.fecha_publicacion|date:"d M" }}
+                                </small>
+                            </div>
+                        </div>
+                    {% empty %}
+                        <p class="text-muted">No hay trabajos recientes disponibles.</p>
+                    {% endfor %}
+                
+                    <a href="{% url 'trabajos' %}" class="read-more-link d-block mt-3 text-primary">
+                        <i class="fa-solid fa-arrow-right me-1"></i> Ver todos
+                    </a>
+                </div>                
 
                 <div class="sidebar-ad card p-3 mb-4">
                     <small class="text-muted">Ad ···</small>

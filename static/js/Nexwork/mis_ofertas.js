@@ -49,7 +49,7 @@ function cargarOfertas() {
                                     <p class="badge bg-light text-dark mb-2">${oferta.modalidad}</p>
                                     <p class="small text-muted">${oferta.descripcion}</p>
                                     <div class="d-grid gap-2 mt-3">
-                                        <a href="#" class="btn btn-sm btn-outline-success w-100">
+                                        <a href="/estadisticas/view/${oferta.id}/" class="btn btn-sm btn-outline-success w-100">
                                             <i class="fa-solid fa-chart-line me-1"></i> Ver análisis
                                         </a>
                                         <a href="/newworks/postulaciones/${oferta.id}/" class="btn btn-sm btn-outline-primary w-100 position-relative">
