@@ -179,6 +179,34 @@ class Trabajo(models.Model):
     def __str__(self):
         return f"{self.titulo} - {self.autor.usuario}"
     
+class TrabajoDetalle(models.Model):
+    trabajo = models.OneToOneField('Trabajo', on_delete=models.CASCADE, related_name='detalle')
+
+    # Campos existentes
+    area = models.CharField(max_length=100, blank=True, null=True)
+    nivel_experiencia = models.CharField(max_length=100, blank=True, null=True)
+    habilidades_tecnicas = models.TextField(blank=True, null=True)
+    habilidades_blandas = models.TextField(blank=True, null=True)
+    tipo_contrato = models.CharField(max_length=100, choices=[
+        ('tiempo_completo', 'Tiempo completo'),
+        ('medio_tiempo', 'Medio tiempo'),
+        ('freelance', 'Freelance'),
+        ('temporal', 'Temporal'),
+        ('prácticas', 'Prácticas profesionales'),
+    ], blank=True, null=True)
+    salario_estimado = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
+    duracion_meses = models.PositiveIntegerField(blank=True, null=True)
+    idiomas = models.CharField(max_length=255, blank=True, null=True)
+    fecha_limite = models.DateField(blank=True, null=True)
+    horario_laboral = models.CharField(max_length=100, blank=True, null=True)  # Ej: L-V 9:00 a 18:00
+    beneficios = models.TextField(blank=True, null=True)  # Ej: Seguro médico, vales de despensa
+    disponibilidad_viajar = models.BooleanField(default=False)
+    disponibilidad_cambio_residencia = models.BooleanField(default=False)
+    numero_vacantes = models.PositiveIntegerField(default=1)
+
+    def __str__(self):
+        return f"Detalle del trabajo: {self.trabajo.titulo}"
+    
 class Postulacion(models.Model):
     trabajo = models.ForeignKey(Trabajo, on_delete=models.CASCADE, related_name='postulaciones')
     usuario = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='postulaciones')

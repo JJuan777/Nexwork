@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from .models import Usuario, Rol, Publicacion, SolicitudAmistad, Amistad, Like, Comentario, PublicacionCompartida, ExperienciaLaboral,Educacion
-from .models import Trabajo, Postulacion
+from .models import Trabajo, Postulacion, TrabajoDetalle
 
 
 class UsuarioAdmin(BaseUserAdmin):
@@ -112,11 +112,40 @@ class EducacionAdmin(admin.ModelAdmin):
     search_fields = ('usuario__usuario', 'titulo', 'institucion')
     list_filter = ('institucion', 'fecha_inicio', 'fecha_fin')
     ordering = ('-fecha_inicio',)
+    
+class TrabajoDetalleAdmin(admin.ModelAdmin):
+    list_display = (
+        'id',
+        'trabajo',
+        'area',
+        'nivel_experiencia',
+        'tipo_contrato',
+        'salario_estimado',
+        'fecha_limite',
+        'numero_vacantes'
+    )
+    search_fields = (
+        'trabajo__titulo',
+        'area',
+        'nivel_experiencia',
+        'habilidades_tecnicas',
+        'habilidades_blandas'
+    )
+    list_filter = (
+        'area',
+        'nivel_experiencia',
+        'tipo_contrato',
+        'fecha_limite',
+        'disponibilidad_viajar',
+        'disponibilidad_cambio_residencia'
+    )
+    ordering = ('-fecha_limite',)
 
 # Registro de modelos
 admin.site.register(Usuario, UsuarioAdmin)
 admin.site.register(PublicacionCompartida, PublicacionCompartidaAdmin)
 admin.site.register(ExperienciaLaboral, ExperienciaLaboralAdmin)
+admin.site.register(TrabajoDetalle, TrabajoDetalleAdmin)
 admin.site.register(Educacion, EducacionAdmin)
 admin.site.register(Trabajo, TrabajoAdmin)
 admin.site.register(Postulacion, PostulacionAdmin)

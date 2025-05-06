@@ -9,6 +9,7 @@ urlpatterns = [
 
     path('login', views.login_view, name='login'),
     path('login_auth', views.login_auth, name='login_auth'),
+    path('logout/', views.logout_view, name='logout'),
 
     path('api/publicaciones/', views.publicaciones_publicas, name='publicaciones_publicas'),
     path('api/publicaciones/nueva/', views.nueva_publicacion, name='nueva_publicacion'),
@@ -39,14 +40,19 @@ urlpatterns = [
     path('api/educacion/<int:id>/actualizar/', views.actualizar_educacion, name='actualizar_educacion'),
     path('api/educacion/<int:id>/eliminar/', views.eliminar_educacion, name='eliminar_educacion'),
     path('api/usuario/<int:id>/educacion/crear/', views.crear_educacion, name='crear_educacion'),
-
-
-
-
-
-
+    
+    #TRABAJOS
     path('newworks/', views.trabajos_view, name='trabajos'),
     path('api/trabajos/', views.trabajos_api, name='api_trabajos'),
+    path('api/trabajos/<int:id>/postularse/', views.postularse_trabajo, name='postularse_trabajo'),
+    path('newworks/view/<int:id>/', views.trabajo_detalle_view, name='trabajo_detalle'),
+    path('ofertas/', views.mis_ofertas_view, name='mis_ofertas_view'),
+    path('api/mis-ofertas/', views.mis_ofertas_api, name='api_mis_ofertas'),
+    path('api/postulaciones/<int:trabajo_id>/usuarios/', views.postulaciones_usuarios_api, name='postulaciones_usuarios_api'),
+    path('newworks/postulaciones/<int:id>/', views.postulaciones_recibidas_view, name='postulaciones_recibidas_view'),
+
+
+
 
     
 

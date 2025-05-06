@@ -65,6 +65,12 @@
                     </a>
                 </li>
                 <li class="nav-item">
+                    <a href="{% url 'mis_ofertas_view' %}" class="nav-link d-flex align-items-center gap-1">
+                        <img src="{% static 'images/jobs.png' %}" alt="Trabajos" width="20">
+                        <span>Postulaciones</span>
+                    </a>
+                </li>
+                <li class="nav-item">
                     <a href="#" class="nav-link d-flex align-items-center gap-1">
                         <img src="{% static 'images/message.png' %}" alt="Mensaje" width="20">
                         <span>Mensaje</span>
@@ -108,7 +114,7 @@
                     <li><a class="dropdown-item d-flex justify-content-between" href="#"><span><img src="{% static 'images/setting.png' %}" width="16"> Settings & Privacy</span> <span>&gt;</span></a></li>
                     <li><a class="dropdown-item d-flex justify-content-between" href="#"><span><img src="{% static 'images/help.png' %}" width="16"> Help & Support</span> <span>&gt;</span></a></li>
                     <li><a class="dropdown-item d-flex justify-content-between" href="#"><span><img src="{% static 'images/display.png' %}" width="16"> Display & Accessibility</span> <span>&gt;</span></a></li>
-                    <li><a class="dropdown-item d-flex justify-content-between" href="#"><span><img src="{% static 'images/logout.png' %}" width="16"> Logout</span> <span>&gt;</span></a></li>
+                    <li><a class="dropdown-item d-flex justify-content-between" href="{% url 'logout' %}"><span><img src="{% static 'images/logout.png' %}" width="16"> Logout</span> <span>&gt;</span></a></li>
                 </ul>
             </div>
         </div>

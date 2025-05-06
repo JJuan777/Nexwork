@@ -1,0 +1,80 @@
+{% extends 'Nexwork/layouts/layoutHome.html' %}
+{% load static %}
+{% block title %}NewWorks{% endblock %}
+
+{% block content %}
+<div class="contenedor-fluid-full py-4">
+    <h3 class="fw-bold mb-4">
+        <i class="fa-solid fa-briefcase me-2 text-primary"></i> Oportunidades laborales
+    </h3>
+
+    <!-- Filtros -->
+    <form id="form-filtros" class="row g-2 mb-4">
+        <div class="col-md-4">
+            <input type="text" class="form-control" name="q" placeholder="¿Qué trabajo buscas?">
+        </div>
+        <div class="col-md-3">
+            <select class="form-select" name="ubicacion" id="select-ubicacion">
+                <option value="">Todas las ubicaciones</option>
+                <option value="Aguascalientes">Aguascalientes</option>
+                <option value="Baja California">Baja California</option>
+                <option value="Baja California Sur">Baja California Sur</option>
+                <option value="Campeche">Campeche</option>
+                <option value="CDMX">CDMX</option>
+                <option value="Chiapas">Chiapas</option>
+                <option value="Chihuahua">Chihuahua</option>
+                <option value="Coahuila">Coahuila</option>
+                <option value="Colima">Colima</option>
+                <option value="Durango">Durango</option>
+                <option value="Estado de México">Estado de México</option>
+                <option value="Guanajuato">Guanajuato</option>
+                <option value="Guerrero">Guerrero</option>
+                <option value="Hidalgo">Hidalgo</option>
+                <option value="Jalisco">Jalisco</option>
+                <option value="Michoacán">Michoacán</option>
+                <option value="Morelos">Morelos</option>
+                <option value="Nayarit">Nayarit</option>
+                <option value="Nuevo León">Nuevo León</option>
+                <option value="Oaxaca">Oaxaca</option>
+                <option value="Puebla">Puebla</option>
+                <option value="Querétaro">Querétaro</option>
+                <option value="Quintana Roo">Quintana Roo</option>
+                <option value="San Luis Potosí">San Luis Potosí</option>
+                <option value="Sinaloa">Sinaloa</option>
+                <option value="Sonora">Sonora</option>
+                <option value="Tabasco">Tabasco</option>
+                <option value="Tamaulipas">Tamaulipas</option>
+                <option value="Tlaxcala">Tlaxcala</option>
+                <option value="Veracruz">Veracruz</option>
+                <option value="Yucatán">Yucatán</option>
+                <option value="Zacatecas">Zacatecas</option>
+            </select>
+        </div>        
+        
+        <div class="col-md-3">
+            <select class="form-select" name="modalidad">
+                <option value="">Todas las modalidades</option>
+                <option value="remoto">Remoto</option>
+                <option value="presencial">Presencial</option>
+                <option value="híbrido">Híbrido</option>
+            </select>
+        </div>
+        <div class="col-md-2">
+            <button type="submit" class="btn btn-primary w-100">
+                <i class="fa-solid fa-magnifying-glass me-1"></i> Buscar
+            </button>
+        </div>
+        <h4 class="fw-bold mb-3 mt-4"><i class="fa-solid fa-briefcase me-2 text-primary"></i> Mis ofertas publicadas</h4>
+    </form>
+
+    
+       
+    <div class="row row-cols-1 row-cols-md-2 g-4" id="contenedor-ofertas">
+        <!-- Aquí se insertan por AJAX -->
+    </div>
+     
+    
+</div>
+
+<script src="{% static 'js/Nexwork/mis_ofertas.js' %}"></script>
+{% endblock %}

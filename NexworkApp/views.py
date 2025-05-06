@@ -1,4 +1,4 @@
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render, get_object_or_404,redirect
 from django.http import JsonResponse
 from .models import Publicacion
 from django.core.serializers import serialize
@@ -8,6 +8,7 @@ from django.contrib.auth import authenticate, login
 from django.views.decorators.http import require_POST
 from django.views.decorators.http import require_http_methods
 from django.templatetags.static import static
+from django.contrib.auth import logout
 from django.utils.timezone import now
 from .models import Usuario
 from .models import Publicacion, Amistad, Like, Comentario, PublicacionCompartida, SolicitudAmistad
@@ -19,6 +20,9 @@ from django.db.models import Q
 import base64
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
+from django.db import models
+from django.db.models import Count
+
 
 # Create your views here.
 @login_required
@@ -27,6 +31,10 @@ def home_view(request):
 
 def login_view(request):
     return render(request, 'Nexwork/auth/login.html') 
+
+def logout_view(request):
+    logout(request)
+    return redirect('login')
 
 @csrf_exempt
 def login_auth(request):
@@ -507,33 +515,6 @@ def enviar_solicitud_amistad(request):
     except Usuario.DoesNotExist:
         return JsonResponse({'success': False, 'message': 'Usuario no encontrado'})
 
-def trabajos_view(request):
-    return render(request, 'Nexwork/trabajos.html') 
-
-def trabajos_api(request):
-    trabajos = Trabajo.objects.select_related('autor').filter(activo=True).order_by('-fecha_publicacion')
-    
-    data = []
-    for t in trabajos:
-        if t.autor.img_profile:
-            img_profile = f"data:image/jpeg;base64,{base64.b64encode(t.autor.img_profile).decode()}"
-        else:
-            img_profile = static('images/Nexwork/default-profile.png')
-
-        data.append({
-            'id': t.id,
-            'titulo': t.titulo,
-            'descripcion': t.descripcion[:150] + ("..." if len(t.descripcion) > 150 else ""),
-            'ubicacion': t.ubicacion,
-            'modalidad': t.modalidad.title(),
-            'fecha': t.fecha_publicacion.strftime('%d %b %Y'),
-            'autor_id': t.autor.id,
-            'autor_nombre': f"{t.autor.nombre} {t.autor.apellidos}",
-            'img_profile': img_profile,
-        })
-
-    return JsonResponse({'trabajos': data})
-
 def experiencias_usuario(request, id):
     usuario = get_object_or_404(Usuario, id=id)
 
@@ -759,3 +740,217 @@ def crear_educacion(request, id):
         return JsonResponse({'success': False, 'error': 'Usuario no encontrado'}, status=404)
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)}, status=500)
+    
+def trabajos_view(request):
+    return render(request, 'Nexwork/trabajos.html') 
+
+@login_required
+def trabajos_api(request):
+    query = request.GET.get('q', '').strip()
+    ubicacion = request.GET.get('ubicacion', '').strip()
+    modalidad = request.GET.get('modalidad', '').strip()
+
+    trabajos = Trabajo.objects.select_related('autor').filter(activo=True)
+
+    if query:
+        trabajos = trabajos.filter(
+            Q(titulo__icontains=query) | Q(descripcion__icontains=query)
+        )
+    if ubicacion:
+        trabajos = trabajos.filter(ubicacion__icontains=ubicacion)
+    if modalidad:
+        trabajos = trabajos.filter(modalidad=modalidad)
+
+    trabajos = trabajos.order_by('-fecha_publicacion')
+
+    usuario = request.user
+    postulaciones = set(
+        Postulacion.objects.filter(usuario=usuario).values_list('trabajo_id', flat=True)
+    )
+
+    data = []
+    for t in trabajos:
+        if t.autor.img_profile:
+            img_profile = f"data:image/jpeg;base64,{base64.b64encode(t.autor.img_profile).decode()}"
+        else:
+            img_profile = static('images/Nexwork/default-profile.png')
+
+        data.append({
+            'id': t.id,
+            'titulo': t.titulo,
+            'descripcion': t.descripcion[:150] + ("..." if len(t.descripcion) > 150 else ""),
+            'ubicacion': t.ubicacion,
+            'modalidad': t.modalidad.title(),
+            'fecha': formatear_fecha_relativa(t.fecha_publicacion),
+            'autor_id': t.autor.id,
+            'autor_nombre': f"{t.autor.nombre} {t.autor.apellidos}",
+            'img_profile': img_profile,
+            'ya_postulado': t.id in postulaciones,
+        })
+
+    return JsonResponse({'trabajos': data})
+
+@csrf_exempt
+@require_POST
+def postularse_trabajo(request, id):
+    if not request.user.is_authenticated:
+        return JsonResponse({'success': False, 'error': 'No autenticado'}, status=401)
+
+    trabajo = get_object_or_404(Trabajo, id=id)
+
+    # Verificar si ya se postuló
+    if Postulacion.objects.filter(trabajo=trabajo, usuario=request.user).exists():
+        return JsonResponse({'success': False, 'error': 'Ya te has postulado a este trabajo'}, status=400)
+
+    try:
+        data = json.loads(request.body)
+        mensaje = data.get('mensaje', '').strip()
+
+        Postulacion.objects.create(
+            trabajo=trabajo,
+            usuario=request.user,
+            mensaje=mensaje,
+            fecha_postulacion=now()
+        )
+
+        return JsonResponse({'success': True, 'message': 'Postulación enviada correctamente'})
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+    
+@login_required
+def trabajo_detalle_view(request, id):
+    trabajo = get_object_or_404(Trabajo.objects.select_related('autor'), pk=id, activo=True)
+
+    if trabajo.autor.img_profile:
+        img_profile = f"data:image/jpeg;base64,{base64.b64encode(trabajo.autor.img_profile).decode()}"
+    else:
+        img_profile = static('images/Nexwork/default-profile.png')
+
+    ya_postulado = Postulacion.objects.filter(trabajo=trabajo, usuario=request.user).exists()
+
+    return render(request, 'Nexwork/trabajo_detalle.html', {
+        'trabajo': trabajo,
+        'img_profile': img_profile,
+        'detalle': getattr(trabajo, 'detalle', None),
+        'ya_postulado': ya_postulado,
+    })
+
+def mis_ofertas_view(request):
+    return render(request, 'Nexwork/mis_ofertas.html') 
+
+@login_required
+def mis_ofertas_api(request):
+    trabajos = Trabajo.objects.select_related('autor').filter(autor=request.user, activo=True)
+
+    q = request.GET.get('q', '').strip()
+    ubicacion = request.GET.get('ubicacion', '')
+    modalidad = request.GET.get('modalidad', '')
+
+    if q:
+        trabajos = trabajos.filter(models.Q(titulo__icontains=q) | models.Q(descripcion__icontains=q))
+    if ubicacion:
+        trabajos = trabajos.filter(ubicacion__iexact=ubicacion)
+    if modalidad:
+        trabajos = trabajos.filter(modalidad__iexact=modalidad)
+
+    trabajos = trabajos.order_by('-fecha_publicacion')
+
+    data = []
+    for t in trabajos:
+        total_postulaciones = Postulacion.objects.filter(trabajo=t).count()
+
+        if t.autor.img_profile:
+            img_profile = f"data:image/jpeg;base64,{base64.b64encode(t.autor.img_profile).decode()}"
+        else:
+            img_profile = static('images/Nexwork/default-profile.png')
+
+        data.append({
+            'id': t.id,
+            'titulo': t.titulo,
+            'descripcion': t.descripcion[:100] + '...' if len(t.descripcion) > 100 else t.descripcion,
+            'ubicacion': t.ubicacion,
+            'modalidad': t.modalidad.title(),
+            'fecha': t.fecha_publicacion.strftime('%d %b %Y'),
+            'autor': f"{t.autor.nombre} {t.autor.apellidos}",
+            'img_profile': img_profile,
+            'postulaciones': total_postulaciones,
+        })
+
+    return JsonResponse({'ofertas': data})
+
+@login_required
+def postulaciones_usuarios_api(request, trabajo_id):
+    search = request.GET.get('search', '').strip().lower()
+    orden = request.GET.get('orden', 'recientes')
+
+    postulaciones = Postulacion.objects.select_related('usuario').filter(trabajo_id=trabajo_id)
+
+    if search:
+        postulaciones = postulaciones.filter(
+            models.Q(usuario__nombre__icontains=search) |
+            models.Q(usuario__apellidos__icontains=search) |
+            models.Q(usuario__correo__icontains=search) |
+            models.Q(usuario__telefono__icontains=search)
+        )
+
+    if orden == 'antiguos':
+        postulaciones = postulaciones.order_by('fecha_postulacion')
+    else:
+        postulaciones = postulaciones.order_by('-fecha_postulacion')
+
+    data = []
+    for p in postulaciones:
+        u = p.usuario
+        img = f"data:image/jpeg;base64,{base64.b64encode(u.img_profile).decode()}" if u.img_profile else '/static/images/Nexwork/default-profile.png'
+
+        experiencias = [
+            {
+                'puesto': exp.puesto,
+                'empresa': exp.empresa,
+                'inicio': exp.fecha_inicio.strftime('%b %Y'),
+                'fin': exp.fecha_fin.strftime('%b %Y') if exp.fecha_fin else 'Actual',
+                'tecnologias': exp.tecnologias
+            }
+            for exp in u.experiencias.all()[:2]
+        ]
+
+        educacion = [
+            {
+                'titulo': e.titulo,
+                'institucion': e.institucion,
+                'inicio': e.fecha_inicio.strftime('%Y'),
+                'fin': e.fecha_fin.strftime('%Y') if e.fecha_fin else 'Actual',
+                'areas': e.areas_estudio
+            }
+            for e in u.educacion.all()[:2]
+        ]
+
+        data.append({
+            'id': u.id,
+            'nombre': f"{u.nombre} {u.apellidos}",
+            'telefono': u.telefono,
+            'correo': u.correo,
+            'ocupacion': u.ocupacion,
+            'img_profile': img,
+            'experiencia': experiencias,
+            'educacion': educacion,
+            'mensaje': p.mensaje,
+            'fecha_postulacion': p.fecha_postulacion.strftime('%d %b %Y'),
+        })
+
+    return JsonResponse({'usuarios': data})
+
+@login_required
+def postulaciones_recibidas_view(request, id):
+    trabajo = get_object_or_404(Trabajo.objects.select_related('autor'), pk=id, autor=request.user)
+
+    if trabajo.autor.img_profile:
+        img_profile = f"data:image/jpeg;base64,{base64.b64encode(trabajo.autor.img_profile).decode()}"
+    else:
+        img_profile = static('images/Nexwork/default-profile.png')
+
+    return render(request, 'Nexwork/postulaciones_recibidas.html', {
+        'trabajo_id': id,
+        'trabajo': trabajo,
+        'img_profile': img_profile
+    })
