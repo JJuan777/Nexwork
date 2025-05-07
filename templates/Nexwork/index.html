@@ -15,7 +15,7 @@
                         {% if request.user.banner_profile %}
                             <img src="{{ request.user.banner_profile|to_base64 }}" alt="Banner" style="width: 100%; height: 100%; object-fit: cover;">
                         {% else %}
-                            <img src="{% static 'images/Network/default-banner.jpg' %}" alt="Banner" style="width: 100%; height: 100%; object-fit: cover;">
+                            <img src="{% static 'images/Nexwork/default-banner.jpg' %}" alt="Banner" style="width: 100%; height: 100%; object-fit: cover;">
                         {% endif %}
                     </div>
 
@@ -23,45 +23,63 @@
                         {% if request.user.img_profile %}
                             <img src="{{ request.user.img_profile|to_base64 }}" alt="Foto de perfil" class="rounded-circle mb-2" width="120">
                         {% else %}
-                            <img src="{% static 'images/Network/default-profile.png' %}" alt="Foto de perfil" class="rounded-circle mb-2" width="120">
+                            <img src="{% static 'images/Nexwork/default-profile.png' %}" alt="Foto de perfil" class="rounded-circle mb-2" width="120">
                         {% endif %}
                         <h5 class="mb-0">{{ request.user.nombre }} {{ request.user.apellidos }}</h5>
                         <small>{{ request.user.ocupacion }}</small>
                         <ul class="list-unstyled mt-3">
-                            <li>Your profile views <span class="float-end">24</span></li>
-                            <li>Your post views <span class="float-end">128</span></li>
-                            <li>Your Connections <span class="float-end">108</span></li>
-                        </ul>
+                            <li class="list-group-item d-flex justify-content-between">
+                                Tus vistas de perfil
+                                <span class="fw-bold text-primary">{{ visitas_perfil }}</span>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between">
+                                Tus publicaciones
+                                <span class="fw-bold text-success">{{ publicaciones_count }}</span>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between">
+                                Tus conexiones
+                                <span class="fw-bold text-info">{{ amistades_count }}</span>
+                            </li>
+                        </ul>                        
                     </div>
 
                     <div class="sidebar-profile-link mt-3">
-                        <a href="#"><img src="{% static 'images/items.png' %}"> My Items</a>
-                        <a href="#"><img src="{% static 'images/premium.png' %}"> Try Premium</a>
-                    </div>
+                        <a href="{% url 'completa_perfil_view' %}" class="d-flex align-items-center gap-2 text-decoration-none text-dark mb-2">
+                            <i class="fa-solid fa-circle-check"></i> Completa <br> tu perfil
+                        </a>
+                    
+                        <a href="{% url 'trabajos' %}?solo_postulados=on" class="d-flex align-items-center gap-2 text-decoration-none text-dark text-center">
+                            <i class="fa-solid fa-briefcase"></i> Mis <br> postulaciones
+                        </a>
+                        
+                    </div>                    
+                    
                 </div>
 
                 <div class="sidebar-activity">
-                    <h6>Recent</h6>
-                    
-                        <a href="#"><img src="{% static 'images/premium.png' %}"> {{ item }}</a>
-                    
-
-                    <h6 class="mt-3">Groups</h6>
-                    
-                        <a href="#"><img src="{% static 'images/premium.png' %}"> {{ group }}</a>
-                  
-
-                    <h6 class="mt-3">Hashtags</h6>
-                    
-                        <a href="#"><img src="{% static 'images/premium.png' %}"> {{ tag }}</a>
-                    
-
-                    <div class="discover-more-link mt-2">
-                        <a href="#">Discover More</a>
+                    <h6 class="text-uppercase text-muted small">Nexwork te impulsa</h6>
+                
+                    <a href="#" class="d-flex align-items-center gap-2 mb-2 text-decoration-none text-dark">
+                        <i class="fa-solid fa-rocket text-primary"></i> Crea tu portafolio profesional
+                    </a>
+                
+                    <a href="#" class="d-flex align-items-center gap-2 mb-2 text-decoration-none text-dark">
+                        <i class="fa-solid fa-users-line text-success"></i> Conecta con expertos en tu industria
+                    </a>
+                
+                    <a href="#" class="d-flex align-items-center gap-2 mb-2 text-decoration-none text-dark">
+                        <i class="fa-solid fa-briefcase text-warning"></i> Descubre oportunidades laborales
+                    </a>
+                
+                    <a href="#" class="d-flex align-items-center gap-2 text-decoration-none text-dark">
+                        <i class="fa-solid fa-chart-line text-danger"></i> Haz crecer tu perfil profesional
+                    </a>
+                
+                    <div class="discover-more-link mt-3">
+                        <a href="#" class="text-primary fw-semibold">Explora todo lo que Nexwork ofrece</a>
                     </div>
-
-                    <p id="showMoreLink" class="mt-2 text-primary" onclick="toggleActivity()">Show more <b>+</b></p>
                 </div>
+                
             </div>
         </div>
 
@@ -164,16 +182,20 @@
                         <i class="fa-solid fa-arrow-right me-1"></i> Ver todos
                     </a>
                 </div>                
-
-                <div class="sidebar-ad card p-3 mb-4">
-                    <small class="text-muted">Ad ···</small>
-                    <p>Master Web Development</p>
-                    <div class="d-flex gap-2 mb-2">
-                        <img src="{% static 'images/user-1.png' %}" width="40">
-                        <img src="{% static 'images/mi-logo.png' %}" width="40">
+                <div class="sidebar-ad card p-3 mb-4 shadow-sm border-0">
+                    <small class="text-muted mb-1">Publicidad destacada</small>
+                    
+                    <p class="fw-semibold mb-2">¿Quieres impulsar tu carrera en tecnología?</p>
+                
+                    <div class="text-center mb-2">
+                        <img src="{% static 'images/mi-logo.png' %}" class="rounded border mx-auto" width="40" height="40" style="object-fit: contain; background-color: white;">
                     </div>
-                    <b>Brand and Demand in Xiaomi</b>
-                    <a href="#" class="ad-link d-block mt-2">Learn More</a>
+                
+                    <p class="text-muted mb-1" style="font-size: 0.875rem;">Forma parte del equipo de innovación en <strong>Xiaomi LATAM</strong>.</p>
+                
+                    <a href="#" class="btn btn-sm btn-outline-primary w-100 mt-2">
+                        Más información
+                    </a>
                 </div>
 
                 <div class="sidebar-useful-links">
@@ -186,8 +208,8 @@
                     <a href="#">More</a>
 
                     <div class="text-center mt-3">
-                        <img src="{% static 'images/logo.png' %}" width="50">
-                        <p class="small text-muted mt-2">Linkedin &#169; 2022. All Rights Reserved</p>
+                        <img src="{% static 'images/Nexwork/logoNexwork.png' %}" width="50">
+                        <p class="small text-muted mt-2">Nexwork &#169; 202. All Rights Reserved</p>
                     </div>
                 </div>
             </div>

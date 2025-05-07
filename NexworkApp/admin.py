@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from .models import Usuario, Rol, Publicacion, SolicitudAmistad, Amistad, Like, Comentario, PublicacionCompartida, ExperienciaLaboral,Educacion
-from .models import Trabajo, Postulacion, TrabajoDetalle, VistaTrabajo
+from .models import Trabajo, Postulacion, TrabajoDetalle, VistaTrabajo, VisitaPerfil, Notificacion
 
 
 class UsuarioAdmin(BaseUserAdmin):
@@ -151,11 +151,29 @@ class VistaTrabajoAdmin(admin.ModelAdmin):
     list_filter = ('trabajo', 'fecha', 'pais', 'estado')
     ordering = ('-fecha',)
 
+# Opcional: Admin para VisitaPerfil
+class VisitaPerfilAdmin(admin.ModelAdmin):
+    list_display = ('id', 'perfil', 'visitante', 'ip', 'fecha')
+    search_fields = ('perfil__usuario', 'visitante__usuario', 'ip')
+    list_filter = ('fecha',)
+    ordering = ('-fecha',)
+
+class NotificacionAdmin(admin.ModelAdmin):
+    list_display = ('id', 'usuario', 'tipo', 'leido', 'fecha', 'mensaje_corto')
+    search_fields = ('usuario__usuario', 'mensaje', 'tipo')
+    list_filter = ('tipo', 'leido', 'fecha')
+    ordering = ('-fecha',)
+
+    def mensaje_corto(self, obj):
+        return (obj.mensaje[:50] + '...') if len(obj.mensaje) > 50 else obj.mensaje
+    mensaje_corto.short_description = 'Mensaje'
 
 
 # Registro de modelos
 admin.site.register(Usuario, UsuarioAdmin)
+admin.site.register(Notificacion, NotificacionAdmin)
 admin.site.register(PublicacionCompartida, PublicacionCompartidaAdmin)
+admin.site.register(VisitaPerfil, VisitaPerfilAdmin)
 admin.site.register(ExperienciaLaboral, ExperienciaLaboralAdmin)
 admin.site.register(TrabajoDetalle, TrabajoDetalleAdmin)
 admin.site.register(VistaTrabajo, VistaTrabajoAdmin)

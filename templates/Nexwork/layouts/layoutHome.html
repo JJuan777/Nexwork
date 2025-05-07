@@ -14,6 +14,8 @@
 
 	<link href="{% static 'bootstrap-5.3.3/css/bootstrap.min.css' %}" rel="stylesheet">
 
+    <link rel="icon" type="image/png" href="{% static 'images/Nexwork/logoNexwork.png' %}">
+
 	<link rel="stylesheet" href="{% static 'css/Nexwork/style2.css' %}">
 </head>
 <body style="background-color: #f0f2f5;">
@@ -22,7 +24,7 @@
 
         <!-- Izquierda -->
 		<a href="{% url 'home' %}" class="navbar-brand d-flex align-items-center gap-2">
-			<img src="{% static 'images/logo.png' %}" alt="Logo" width="40">
+			<img src="{% static 'images/Nexwork/logoNexwork.png' %}" alt="Logo" width="40">
 		</a>		
 
         <!-- Botón hamburguesa -->
@@ -58,51 +60,98 @@
                         <span>Mi perfil</span>
                     </a>
                 </li>
+                {% if request.user.rol_id == 2 %}
                 <li class="nav-item">
                     <a href="{% url 'trabajos' %}" class="nav-link d-flex align-items-center gap-1">
                         <img src="{% static 'images/jobs.png' %}" alt="Trabajos" width="20">
                         <span>Trabajos</span>
                     </a>
                 </li>
+                {% endif %}
+                {% if request.user.rol_id == 1 %}
                 <li class="nav-item">
                     <a href="{% url 'mis_ofertas_view' %}" class="nav-link d-flex align-items-center gap-1">
                         <img src="{% static 'images/jobs.png' %}" alt="Trabajos" width="20">
                         <span>Postulaciones</span>
                     </a>
                 </li>
+                {% endif %}
                 <li class="nav-item">
                     <a href="#" class="nav-link d-flex align-items-center gap-1">
                         <img src="{% static 'images/message.png' %}" alt="Mensaje" width="20">
                         <span>Mensaje</span>
                     </a>
                 </li>
-                <li class="nav-item">
-                    <a href="#" class="nav-link d-flex align-items-center gap-1">
-                        <img src="{% static 'images/notification.png' %}" alt="Notificaciones" width="20">
-                        <span>Notificaciones</span>
+                <li class="nav-item position-relative">
+                    <a href="{% url 'solicitudes' %}" class="nav-link d-flex align-items-center gap-2">
+                        <i class="fa-solid fa-user-plus"></i>
+                        <span>Solicitudes</span>
+                
+                        {% if solicitudes_pendientes > 0 %}
+                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                                {{ solicitudes_pendientes }}
+                            </span>
+                        {% endif %}
                     </a>
-                </li>
+                    <li class="nav-item dropdown position-relative">
+                        <a class="nav-link dropdown-toggle d-flex align-items-center gap-2" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fa-solid fa-bell"></i>
+                            <span>Notificaciones</span>
+                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" id="contador-notif" style="display: none;">0</span>
+                        </a>
+                    
+                        <div class="dropdown-menu dropdown-menu-end p-2 shadow"
+                             data-bs-auto-close="outside"
+                             style="width: 320px; max-height: 440px; overflow-y: auto;">
+                            
+                            <ul class="list-unstyled mb-0" id="menu-notificaciones" style="max-height: 360px; overflow-y: auto;">
+                                <li class="text-muted small">Cargando notificaciones...</li>
+                            </ul>
+                    
+                            <div class="dropdown-footer text-center mt-2">
+                                <button id="btn-mas-notificaciones" class="btn btn-sm btn-link text-primary d-none" type="button">Mostrar más</button>
+                            </div>
+                        </div>
+                    </li>
+                                        
             </ul>
-
+                
             <!-- Derecha: perfil -->
 			<div class="dropdown d-flex align-items-center justify-content-center ms-auto px-2">
-				<a href="#" class="d-flex align-items-center gap-2 p-2" id="dropdownProfile" data-bs-toggle="dropdown" aria-expanded="false">
-					<img src="{{ request.user.img_profile|to_base64 }}" 
-						alt="Foto de perfil" 
-						class="rounded-circle" 
-						width="40" height="40" 
-						style="object-fit: cover; padding: 4px;">
-						<i class="fa-solid fa-caret-down"></i> <!-- Icono flecha abajo -->
-				</a>
+                <a href="#" class="d-flex align-items-center gap-2 p-2" id="dropdownProfile" data-bs-toggle="dropdown" aria-expanded="false">
+                    {% if request.user.img_profile %}
+                        <img src="{{ request.user.img_profile|to_base64 }}" 
+                             alt="Foto de perfil" 
+                             class="rounded-circle" 
+                             width="40" height="40" 
+                             style="object-fit: cover; padding: 4px;">
+                    {% else %}
+                        <img src="{% static 'images/Nexwork/default-profile.png' %}" 
+                             alt="Foto de perfil" 
+                             class="rounded-circle" 
+                             width="40" height="40" 
+                             style="object-fit: cover; padding: 4px;">
+                    {% endif %}
+                    <i class="fa-solid fa-caret-down"></i>
+                </a>                
 			
                 <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownProfile">
                     <li class="px-3 py-2">
                         <div class="d-flex align-items-center gap-2">
-                            <img src="{{ request.user.img_profile|to_base64 }}" 
-								alt="Foto de perfil" 
-								class="rounded-circle mb-2" 
-								width="40" height="40" 
-								style="object-fit: cover;">
+                            {% if request.user.img_profile %}
+                                <img src="{{ request.user.img_profile|to_base64 }}" 
+                                    alt="Foto de perfil" 
+                                    class="rounded-circle mb-2" 
+                                    width="40" height="40" 
+                                    style="object-fit: cover;">
+                            {% else %}
+                                <img src="{% static 'images/Nexwork/default-profile.png' %}" 
+                                    alt="Foto de perfil" 
+                                    class="rounded-circle mb-2" 
+                                    width="40" height="40" 
+                                    style="object-fit: cover;">
+                            {% endif %}
+
                             <div>
                                 <h6 class="mb-0">{{ request.user.nombre }} {{ request.user.apellidos }}</h6>
                                 <small><a href="{% url 'profile' request.user.id %}" class="text-muted">Ver perfil</a></small>
@@ -157,6 +206,8 @@
 
 <!-- Scripts -->
 <script src="{% static 'bootstrap-5.3.3/js/bootstrap.bundle.min.js' %}"></script>
+
+<script src="{% static 'js/Nexwork/notificaciones.js' %}"></script>
 
 <!-- SweetAlert2 CDN -->
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>

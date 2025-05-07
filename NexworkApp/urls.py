@@ -8,6 +8,8 @@ urlpatterns = [
     path('', views.home_view, name='home'),
 
     path('login', views.login_view, name='login'),
+    path('registro/', views.registro_view, name='registro'),
+    path('api/registro/', views.registro_usuario, name='registro_usuario'),
     path('login_auth', views.login_auth, name='login_auth'),
     path('logout/', views.logout_view, name='logout'),
 
@@ -52,6 +54,24 @@ urlpatterns = [
     path('newworks/postulaciones/<int:id>/', views.postulaciones_recibidas_view, name='postulaciones_recibidas_view'),
     path('estadisticas/view/<int:id>/', views.estadisticas_trabajo_view, name='estadisticas_trabajo_view'),
     path('api/vistas-por-pais/<int:id>/', views.vistas_por_pais_api, name='vistas_por_pais_api'),
+
+    path('profile-nexwork', views.completa_perfil_view, name='completa_perfil_view'),
+
+    #Solicitudes de amistad
+    path('solicitudes/', views.solicitudes_amistad_view, name='solicitudes'),
+    path('api/solicitudes/', views.solicitudes_api, name='api_solicitudes'),
+    path('api/solicitudes/<int:id>/procesar/', views.procesar_solicitud_view, name='procesar_solicitud'),
+    path('api/contador-solicitudes/', views.contador_solicitudes_api, name='contador_solicitudes'),
+
+    #Notificaciones
+    path('api/notificaciones/', views.notificaciones_api, name='api_notificaciones'),
+    path('api/notificaciones/marcar-leida/', views.marcar_notificacion_leida, name='marcar_notificacion_leida'),
+    path('api/notificaciones/eliminar/', views.eliminar_notificacion, name='eliminar_notificacion'),
+
+
+
+
+
 
 
 

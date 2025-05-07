@@ -1,52 +1,26 @@
-document.addEventListener("DOMContentLoaded", () => {
-    const form = document.getElementById("registroForm");
+document.querySelector('form').addEventListener('submit', function (e) {
+    e.preventDefault();
 
-    form.addEventListener("submit", function (e) {
-        e.preventDefault();
+    const formData = new FormData(this);
+    const password1 = formData.get('password1');
+    const password2 = formData.get('password2');
 
-        const data = {
-            usuario: document.getElementById("usuario").value,
-            correo: document.getElementById("correo").value,
-            nombre: document.getElementById("nombre").value,
-            apellidos: document.getElementById("apellidos").value,
-            telefono: document.getElementById("telefono").value,
-            password: document.getElementById("password").value,
-        };
-
-        fetch("/seguimientos/registro_auth/", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "X-CSRFToken": getCookie("csrftoken")
-            },
-            body: JSON.stringify(data)
-        })
-        .then(res => res.json())
-        .then(result => {
-            if (result.success) {
-                alert("Registro exitoso. Ahora puedes iniciar sesión.");
-                window.location.href = "/login/";
-            } else {
-                alert("Error: " + result.message);
-            }
-        })
-        .catch(error => {
-            console.error("Error:", error);
-        });
-    });
-
-    function getCookie(name) {
-        let cookieValue = null;
-        if (document.cookie && document.cookie !== "") {
-            const cookies = document.cookie.split(";");
-            for (let i = 0; i < cookies.length; i++) {
-                const cookie = cookies[i].trim();
-                if (cookie.substring(0, name.length + 1) === name + "=") {
-                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                    break;
-                }
-            }
-        }
-        return cookieValue;
+    if (password1 !== password2) {
+        alert('Las contraseñas no coinciden.');
+        return;
     }
+
+    fetch("/api/registro/", {
+        method: 'POST',
+        headers: { 'X-CSRFToken': '{{ csrf_token }}' },
+        body: formData
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            window.location.href = data.redirect;
+        } else {
+            alert(data.error);
+        }
+    });
 });

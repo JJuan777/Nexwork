@@ -1,0 +1,106 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro - Nexwork</title>
+    <link href="{% static 'bootstrap-5.3.3/css/bootstrap.min.css' %}" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="icon" type="image/png" href="{% static 'images/Nexwork/logoNexwork.png' %}">
+</head>
+<body class="bg-light">
+
+    <div class="container py-5">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="card shadow-sm border-0 rounded-4">
+                    <div class="card-body p-5">
+                        <h3 class="fw-bold mb-4 text-center">
+                            <i class="fa-solid fa-user-plus me-2 text-primary"></i> Crea tu cuenta en Nexwork
+                        </h3>
+
+                        <form method="post" enctype="multipart/form-data">
+                            <!-- Simula {% csrf_token %} -->
+                            <input type="hidden" name="csrfmiddlewaretoken" value="">
+
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label for="nombre" class="form-label">Nombre <span class="text-danger">*</span></label>
+                                    <input type="text" name="nombre" id="nombre" class="form-control" required>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label for="apellidos" class="form-label">Apellidos <span class="text-danger">*</span></label>
+                                    <input type="text" name="apellidos" id="apellidos" class="form-control" required>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label for="correo" class="form-label">Correo electrónico <span class="text-danger">*</span></label>
+                                    <input type="email" name="correo" id="correo" class="form-control" required>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label for="usuario" class="form-label">Nombre de usuario <span class="text-danger">*</span></label>
+                                    <input type="text" name="usuario" id="usuario" class="form-control" required>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label for="ocupacion" class="form-label">Ocupación <span class="text-danger">*</span></label>
+                                    <input type="text" name="ocupacion" id="ocupacion" class="form-control" required>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label for="telefono" class="form-label">Teléfono (opcional)</label>
+                                    <input type="text" name="telefono" id="telefono" class="form-control">
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label for="rol" class="form-label">Selecciona tu rol <span class="text-danger">*</span></label>
+                                    <select name="rol_id" id="rol" class="form-select" required>
+                                        <option value="" disabled selected>Selecciona una opción</option>
+                                        {% for rol in roles %}
+                                            <option value="{{ rol.id }}">{{ rol.nombre }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>                                
+
+                                <div class="col-md-6">
+                                    <label for="img_profile" class="form-label">Foto de perfil (opcional)</label>
+                                    <input type="file" name="img_profile" id="img_profile" class="form-control" accept="image/*">
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label for="banner_profile" class="form-label">Banner de perfil (opcional)</label>
+                                    <input type="file" name="banner_profile" id="banner_profile" class="form-control" accept="image/*">
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label for="password1" class="form-label">Contraseña <span class="text-danger">*</span></label>
+                                    <input type="password" name="password1" id="password1" class="form-control" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="password2" class="form-label">Confirmar contraseña <span class="text-danger">*</span></label>
+                                    <input type="password" name="password2" id="password2" class="form-control" required>
+                                </div>                                
+                            </div>
+
+                            <div class="d-grid mt-4">
+                                <button type="submit" class="btn btn-primary rounded-pill">
+                                    <i class="fa-solid fa-user-check me-1"></i> Registrarme
+                                </button>
+                            </div>
+
+                            <div class="text-center mt-3">
+                                <small>¿Ya tienes cuenta? <a href="#" class="text-decoration-none fw-semibold">Inicia sesión</a></small>
+                            </div>
+                        </form>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="{% static 'js/Nexwork/auth/registro.js' %}"></script>
+</body>
+</html>

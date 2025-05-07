@@ -64,6 +64,15 @@
                 <i class="fa-solid fa-magnifying-glass me-1"></i> Buscar
             </button>
         </div>
+        <div class="col-md-2 d-flex align-items-center">
+            <div class="form-check mt-2">
+                <input class="form-check-input" type="checkbox" name="solo_postulados" id="solo-postulados"
+                {% if request.GET.solo_postulados == "on" %}checked{% endif %}>         
+                <label class="form-check-label" for="solo-postulados">
+                    Solo postulados
+                </label>
+            </div>
+        </div>
     </form>
 
     <!-- Resultados -->
@@ -72,5 +81,9 @@
     </div>
 </div>
 
+<script>
+    window.usuarioRolId = {{ request.user.rol.id|default:"null" }};
+</script>
 <script src="{% static 'js/Nexwork/trabajos.js' %}"></script>
+
 {% endblock %}

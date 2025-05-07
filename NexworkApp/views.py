@@ -11,9 +11,10 @@ from django.templatetags.static import static
 from django.contrib.auth import logout
 from django.utils.timezone import now
 from datetime import timedelta
+from datetime import date
 from .models import Usuario
 from .models import Publicacion, Amistad, Like, Comentario, PublicacionCompartida, SolicitudAmistad
-from .models import ExperienciaLaboral, Educacion
+from .models import ExperienciaLaboral, Educacion, Rol
 from django.utils.dateparse import parse_date
 from .models import Trabajo, Postulacion
 import json
@@ -23,19 +24,89 @@ from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 from django.db import models
 from django.db.models import Count
-from .models import VistaTrabajo
-
+from .models import VistaTrabajo,VisitaPerfil
+from .models import Notificacion
 
 # Create your views here.
 @login_required
 def home_view(request):
+    usuario = request.user
+
     trabajos = Trabajo.objects.filter(activo=True).select_related('autor').order_by('-fecha_publicacion')[:2]
+
+    visitas_perfil = VisitaPerfil.objects.filter(perfil=usuario).count()
+    publicaciones = Publicacion.objects.filter(autor=usuario).count()
+    amistades = Amistad.objects.filter(
+        Q(usuario1=usuario) | Q(usuario2=usuario)
+    ).count()
+
     return render(request, 'Nexwork/index.html', {
-        'trabajos_recientes': trabajos
+        'trabajos_recientes': trabajos,
+        'visitas_perfil': visitas_perfil,
+        'publicaciones_count': publicaciones,
+        'amistades_count': amistades,
     })
 
 def login_view(request):
     return render(request, 'Nexwork/auth/login.html') 
+
+def registro_view(request):
+    roles = Rol.objects.all()
+    return render(request, 'Nexwork/auth/registro.html', {
+        'roles': roles
+    })
+
+@csrf_exempt
+def registro_usuario(request):
+    if request.method == 'POST':
+        nombre = request.POST.get('nombre')
+        apellidos = request.POST.get('apellidos')
+        correo = request.POST.get('correo')
+        usuario = request.POST.get('usuario')
+        ocupacion = request.POST.get('ocupacion')
+        telefono = request.POST.get('telefono', '')
+        password1 = request.POST.get('password1')
+        password2 = request.POST.get('password2')
+        rol_id = request.POST.get('rol_id')
+        img_profile = request.FILES.get('img_profile')
+        banner_profile = request.FILES.get('banner_profile')
+
+        if password1 != password2:
+            return JsonResponse({'success': False, 'error': 'Las contraseñas no coinciden.'})
+
+        if Usuario.objects.filter(usuario=usuario).exists():
+            return JsonResponse({'success': False, 'error': 'El usuario ya está registrado.'})
+
+        if Usuario.objects.filter(correo=correo).exists():
+            return JsonResponse({'success': False, 'error': 'El correo ya está en uso.'})
+
+        try:
+            rol = Rol.objects.get(id=rol_id)
+        except Rol.DoesNotExist:
+            return JsonResponse({'success': False, 'error': 'Rol seleccionado no válido.'})
+
+        user = Usuario(
+            nombre=nombre,
+            apellidos=apellidos,
+            correo=correo,
+            usuario=usuario,
+            ocupacion=ocupacion,
+            telefono=telefono,
+            rol=rol
+        )
+        if img_profile:
+            user.img_profile = img_profile.read()
+        if banner_profile:
+            user.banner_profile = banner_profile.read()
+
+        user.set_password(password1)
+        user.save()
+
+        login(request, user)
+
+        return JsonResponse({'success': True, 'redirect': '/profile-nexwork'})
+
+    return JsonResponse({'success': False, 'error': 'Método no permitido'})
 
 def logout_view(request):
     logout(request)
@@ -358,9 +429,26 @@ def nuevo_comentario(request, publicacion_id):
     except Exception as e:
         return JsonResponse({'success': False, 'message': str(e)}, status=400)
 
+@login_required
 def profile_view(request, id):
     usuario = get_object_or_404(Usuario, id=id)
     actual = request.user
+
+    # Registrar visita (solo si es otro usuario y aún no visitó hoy)
+    if actual != usuario:
+        ya_visito_hoy = VisitaPerfil.objects.filter(
+            perfil=usuario,
+            visitante=actual,
+            fecha__date=date.today()
+        ).exists()
+
+        if not ya_visito_hoy:
+            VisitaPerfil.objects.create(
+                perfil=usuario,
+                visitante=actual,
+                ip=get_client_ip(request),
+                user_agent=request.META.get('HTTP_USER_AGENT', '')
+            )
 
     # Imagen de perfil
     if usuario.img_profile:
@@ -372,39 +460,26 @@ def profile_view(request, id):
     if usuario.banner_profile:
         banner_profile = f"data:image/jpeg;base64,{base64.b64encode(usuario.banner_profile).decode()}"
     else:
-        banner_profile = static('images/Nexwork/banner_default2.png')
-
+        banner_profile = static('images/Nexwork/default-banner.jpg')
 
     todas_experiencias = usuario.experiencias.order_by('-fecha_inicio')
     experiencias = todas_experiencias[:2]
     hay_mas_experiencias = todas_experiencias.count() > 2
 
-    # Preprocesar tecnologías
     for exp in experiencias:
-        if exp.tecnologias:
-            exp.tecnologias_lista = [tag.strip() for tag in exp.tecnologias.split(',')]
-        else:
-            exp.tecnologias_lista = []
+        exp.tecnologias_lista = [tag.strip() for tag in exp.tecnologias.split(',')] if exp.tecnologias else []
 
-    # Cargar educación (máximo 2 registros)
     educaciones = usuario.educacion.all()[:2]
     hay_mas_educacion = usuario.educacion.count() > 2
 
-    # Preprocesar áreas de estudio
     for edu in educaciones:
-        if edu.areas_estudio:
-            edu.areas_estudio_lista = [tag.strip() for tag in edu.areas_estudio.split(',')]
-        else:
-            edu.areas_estudio_lista = []
+        edu.areas_estudio_lista = [tag.strip() for tag in edu.areas_estudio.split(',')] if edu.areas_estudio else []
 
-
-    # Inicializar variables
     ya_son_amigos = False
     solicitud_pendiente = False
     contactos = []
 
     if actual.is_authenticated:
-        # Verificar estado de amistad si es otro perfil
         if actual != usuario:
             ya_son_amigos = Amistad.objects.filter(
                 Q(usuario1=actual, usuario2=usuario) |
@@ -417,12 +492,8 @@ def profile_view(request, id):
                 estado='pendiente'
             ).exists()
 
-        # Obtener contactos del usuario visitado (máximo 5)
         amistades = Amistad.objects.filter(Q(usuario1=usuario) | Q(usuario2=usuario))[:5]
-        contactos = [
-            a.usuario2 if a.usuario1 == usuario else a.usuario1
-            for a in amistades
-        ]
+        contactos = [a.usuario2 if a.usuario1 == usuario else a.usuario1 for a in amistades]
 
     return render(request, 'Nexwork/profile.html', {
         'usuario': usuario,
@@ -435,7 +506,6 @@ def profile_view(request, id):
         'hay_mas_experiencias': hay_mas_experiencias,
         'educaciones': educaciones,
         'hay_mas_educacion': hay_mas_educacion,
-
     })
 
 @csrf_exempt
@@ -754,6 +824,7 @@ def trabajos_api(request):
     query = request.GET.get('q', '').strip()
     ubicacion = request.GET.get('ubicacion', '').strip()
     modalidad = request.GET.get('modalidad', '').strip()
+    solo_postulados = request.GET.get('solo_postulados') == 'on'
 
     trabajos = Trabajo.objects.select_related('autor').filter(activo=True)
 
@@ -768,10 +839,15 @@ def trabajos_api(request):
 
     trabajos = trabajos.order_by('-fecha_publicacion')
 
+    # Mover aquí: necesario antes de usarlo
     usuario = request.user
     postulaciones = set(
         Postulacion.objects.filter(usuario=usuario).values_list('trabajo_id', flat=True)
     )
+
+    # Filtro por solo postulados
+    if solo_postulados:
+        trabajos = trabajos.filter(id__in=postulaciones)
 
     data = []
     for t in trabajos:
@@ -1077,3 +1153,116 @@ def vistas_por_pais_api(request, id):
         'ciudades': agrupar_por('ciudad'),
     }
     return JsonResponse(data)
+
+@login_required
+def completa_perfil_view(request):
+    return render(request, 'Nexwork/completa_perfil.html') 
+
+def solicitudes_amistad_view(request):
+    return render(request, 'Nexwork/solicitudes_amistad.html') 
+
+@login_required
+def solicitudes_api(request):
+    solicitudes = SolicitudAmistad.objects.select_related('de_usuario').filter(
+        para_usuario=request.user,
+        estado='pendiente'
+    )
+
+    data = []
+    for s in solicitudes:
+        if s.de_usuario.img_profile:
+            img_profile = f"data:image/jpeg;base64,{base64.b64encode(s.de_usuario.img_profile).decode()}"
+        else:
+            img_profile = '/static/images/Nexwork/default-profile.png'
+
+        data.append({
+            'id': s.id,
+            'nombre': f"{s.de_usuario.nombre} {s.de_usuario.apellidos}",
+            'usuario_id': s.de_usuario.id,
+            'img_profile': img_profile,
+            'fecha': s.fecha_creacion.strftime('%d %b %Y'),
+        })
+
+    return JsonResponse({'solicitudes': data})
+
+@require_POST
+@login_required
+def procesar_solicitud_view(request, id):
+    accion = request.POST.get('accion')
+
+    try:
+        solicitud = SolicitudAmistad.objects.get(id=id, para_usuario=request.user, estado='pendiente')
+
+        if accion == 'aceptar':
+            Amistad.objects.create(usuario1=solicitud.de_usuario, usuario2=solicitud.para_usuario)
+            solicitud.estado = 'aceptada'
+            solicitud.save()
+            return JsonResponse({'success': True, 'mensaje': 'Solicitud aceptada.'})
+
+        elif accion == 'rechazar':
+            solicitud.estado = 'rechazada'
+            solicitud.save()
+            return JsonResponse({'success': True, 'mensaje': 'Solicitud rechazada.'})
+
+        else:
+            return JsonResponse({'success': False, 'error': 'Acción no válida.'}, status=400)
+
+    except SolicitudAmistad.DoesNotExist:
+        return JsonResponse({'success': False, 'error': 'Solicitud no encontrada.'}, status=404)
+    
+@login_required
+def contador_solicitudes_api(request):
+    count = SolicitudAmistad.objects.filter(
+        para_usuario=request.user,
+        estado='pendiente'
+    ).count()
+    return JsonResponse({'count': count})
+
+@login_required
+def notificaciones_api(request):
+    offset = int(request.GET.get('offset', 0))
+    limite = 10
+
+    notifs_qs = Notificacion.objects.filter(usuario=request.user).order_by('-fecha')
+    notifs = notifs_qs[offset:offset+limite]
+
+    data = []
+    for n in notifs:
+        data.append({
+            'id': n.id,
+            'mensaje': n.mensaje,
+            'url': n.url,
+            'fecha': n.fecha.strftime('%d %b, %H:%M'),
+            'leido': n.leido
+        })
+
+    total = notifs_qs.count()
+    no_leidas = notifs_qs.filter(leido=False).count()
+    return JsonResponse({
+        'notificaciones': data,
+        'no_leidas': no_leidas,
+        'hay_mas': offset + limite < total
+    })
+
+@require_POST
+@login_required
+def marcar_notificacion_leida(request):
+    notif_id = request.POST.get('id')
+    try:
+        noti = Notificacion.objects.get(id=notif_id, usuario=request.user)
+        noti.leido = True
+        noti.save()
+        return JsonResponse({'success': True})
+    except Notificacion.DoesNotExist:
+        return JsonResponse({'success': False, 'error': 'No encontrada'}, status=404)
+    
+@require_POST
+@login_required
+def eliminar_notificacion(request):
+    notif_id = request.POST.get('id')
+    try:
+        noti = Notificacion.objects.get(id=notif_id, usuario=request.user)
+        noti.delete()
+        return JsonResponse({'success': True})
+    except Notificacion.DoesNotExist:
+        return JsonResponse({'success': False, 'error': 'No encontrada'}, status=404)

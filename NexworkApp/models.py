@@ -260,3 +260,55 @@ class Educacion(models.Model):
 
     def __str__(self):
         return f"{self.titulo} - {self.institucion}"
+
+class VisitaPerfil(models.Model):
+    perfil = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='visitas_recibidas'
+    )
+    visitante = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True, blank=True,
+        related_name='visitas_realizadas'
+    )
+    fecha = models.DateTimeField(auto_now_add=True)
+    ip = models.GenericIPAddressField(null=True, blank=True)
+    user_agent = models.TextField(blank=True)
+
+    class Meta:
+        ordering = ['-fecha']
+        verbose_name = 'Visita de perfil'
+        verbose_name_plural = 'Visitas de perfiles'
+        unique_together = ('perfil', 'visitante', 'fecha')  # opcional para evitar duplicados extremos
+
+    def __str__(self):
+        return f"{self.visitante} visitó a {self.perfil} el {self.fecha.strftime('%d/%m/%Y %H:%M')}"
+    
+class Notificacion(models.Model):
+    TIPO_CHOICES = [
+        ('amistad', 'Amistad'),
+        ('postulacion', 'Postulación'),
+        ('comentario', 'Comentario'),
+        ('like', 'Like'),
+        ('compartido', 'Publicación compartida'),
+        ('sistema', 'Sistema'),
+    ]
+
+    usuario = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='notificaciones'
+    )
+    tipo = models.CharField(max_length=20, choices=TIPO_CHOICES)
+    mensaje = models.TextField()
+    url = models.CharField(max_length=255, blank=True, help_text="Enlace donde redirige la notificación")
+    leido = models.BooleanField(default=False)
+    fecha = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.usuario.usuario} → {self.tipo} | {'leído' if self.leido else 'nuevo'}"
+
+    class Meta:
+        ordering = ['-fecha']

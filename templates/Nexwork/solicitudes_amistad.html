@@ -1,0 +1,19 @@
+{% extends 'Nexwork/layouts/layoutHome.html' %}
+{% load static %}
+{% block title %}Nexwork- Solicitudes{% endblock %}
+
+{% block content %}
+<div class="contenedor-fluid-full py-4">
+    <h3 class="fw-bold mb-4">
+        <i class="fa-solid fa-briefcase me-2 text-primary"></i> Solicitudes de amistad - Contactos
+    </h3>
+
+    <div class="row" id="contenedor-solicitudes">
+        <!-- Aquí se insertarán las tarjetas por AJAX -->
+    </div>
+    
+
+</div>
+    
+<script src="{% static 'js/Nexwork/solicitudes.js' %}"></script>
+{% endblock %}
