@@ -72,16 +72,7 @@ urlpatterns = [
     path('api/notificaciones/marcar-leida/', views.marcar_notificacion_leida, name='marcar_notificacion_leida'),
     path('api/notificaciones/eliminar/', views.eliminar_notificacion, name='eliminar_notificacion'),
 
-
-
-
-
-
-
-
-
-    
-
+    path('mensajes/', views.mensaje_view, name='mensaje_view')
 
 
 ]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

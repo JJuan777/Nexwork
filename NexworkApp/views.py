@@ -1323,3 +1323,7 @@ def api_update_password(request):
         return JsonResponse({"success": True, "message": "Contraseña actualizada correctamente."})
     
     return JsonResponse({"success": False, "message": "Método no permitido."}, status=405)
+
+@login_required
+def mensaje_view(request):
+    return render(request, 'Nexwork/mensaje.html') 
