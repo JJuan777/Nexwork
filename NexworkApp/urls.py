@@ -30,6 +30,10 @@ urlpatterns = [
     path('profile/view/<int:id>/', views.profile_view, name='profile'),
     path('api/usuario/<int:id>/actualizar_img/', views.actualizar_img_profile, name='actualizar_img_profile'),
     path('api/usuario/<int:id>/actualizar_banner/', views.actualizar_banner_profile, name='actualizar_banner_profile'),
+    path('settings/', views.settings_usuario_view, name='settings_usuario_view'),
+    path('api/user/settings/', views.api_get_user_settings, name='api_get_user_settings'),
+    path('api/user/settings/update/', views.api_update_user_settings, name='api_update_user_settings'),
+    path('api/user/settings/update-password/', views.api_update_password, name='api_update_password'),
             #experiencias
     path('profile/<int:id>/experiencias/', views.experiencias_usuario, name='profile_experiencias'),
     path('api/usuario/<int:id>/experiencias/', views.api_experiencias_usuario, name='api_experiencias_usuario'),

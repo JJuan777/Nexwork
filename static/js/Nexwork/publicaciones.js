@@ -68,34 +68,23 @@
                                 <i class="fa-solid fa-retweet text-primary"></i> Compartido por
                                 <strong>${pub.compartido_por}</strong> 
                                 <img src="${imgCompartido}" class="rounded-circle" width="24" height="24" style="object-fit: cover;" alt="Img compartido">
-                            </div>`;
-                    }                    
+                            </div>
+                            ${pub.comentario_compartido ? `
+                            <p class="fst-italic text-secondary mb-2">${pub.comentario_compartido}</p>
+                            ` : ''}`;
+                    }   
     
-                    let comentarioCompartido = '';
-                    if (pub.comentario_compartido) {
-                        comentarioCompartido = `
-                            <p class="fst-italic text-secondary mb-2">${pub.comentario_compartido}</p>`;
-                    }
-    
+                    // Limitar descripción
+                    let descripcionCompleta = pub.descripcion;
+                    let descripcionCorta = descripcionCompleta.length > 200 
+                        ? `${descripcionCompleta.slice(0, 200)}... <span class="ver-mas" onclick="verMas(${pub.id})">Ver más</span>` 
+                        : descripcionCompleta;
+                    
                     const html = `
                         <div id="publicacion-${pub.id}" class="post mb-4 position-relative p-3 rounded shadow-sm bg-white">
-                            ${pub.es_mia ? `
-                            <div class="dropdown position-absolute top-0 end-0 m-2">
-                                <button class="btn btn-light btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                    <i class="fa-solid fa-ellipsis"></i>
-                                </button>
-                                <ul class="dropdown-menu">
-                                    ${pub.es_mia && !pub.es_compartida ? `
-                                    <li><a class="dropdown-item" onclick="activarEdicionInline(${pub.id})">Editar</a></li>
-                                    ` : ''}
-                                    <li><a class="dropdown-item text-danger" onclick="eliminarPublicacion(${pub.es_compartida ? pub.id_compartida : pub.id}, ${pub.es_compartida})"
-                                    >Eliminar</a></li>
-                                </ul>
-                            </div>` : ''}
-    
                             <!-- Compartido por -->
                             ${compartidoHeader}
-    
+                            
                             <!-- Autor original -->
                             <div class="post-author d-flex align-items-center mb-2">
                                 <img src="${imgProfileSrc}" class="img-profile" alt="User">
@@ -107,12 +96,11 @@
                                 </div>
                             </div>
     
-                            <!-- Comentario al compartir -->
-                            ${comentarioCompartido}
-    
                             <!-- Descripción original -->
-                            <p class="mt-2 descripcion-publicacion">${pub.descripcion}</p>
-    
+                            <p class="mt-2 descripcion-publicacion" id="descripcion-${pub.id}" data-completa="${descripcionCompleta}">
+                                ${descripcionCorta}
+                            </p>
+                            
                             <!-- Imagen -->
                             ${pub.imagen ? `<img src="${pub.imagen}" class="post-img mt-2 img-fluid rounded" alt="Imagen de publicación">` : ''}
     
@@ -154,13 +142,29 @@
                             <div id="comentarios-publicacion-${pub.id}" class="comentarios-container border-top mt-3 pt-3"></div>
                         </div>
                     `;
-    
                     contenedor.innerHTML += html;
                 });
     
                 offset += publicaciones.length;
             })
             .finally(() => cargando = false);
+    }
+    
+    // Función para mostrar la descripción completa
+    function verMas(id) {
+        const descripcionElement = document.getElementById(`descripcion-${id}`);
+        const descripcionCompleta = descripcionElement.getAttribute("data-completa");
+        descripcionElement.innerHTML = `${descripcionCompleta} <span class="ver-mas" onclick="verMenos(${id})">Ver menos</span>`;
+    }
+    
+    // Función para volver a la versión corta
+    function verMenos(id) {
+        const descripcionElement = document.getElementById(`descripcion-${id}`);
+        const descripcionCompleta = descripcionElement.getAttribute("data-completa");
+        const descripcionCorta = descripcionCompleta.length > 200 
+            ? `${descripcionCompleta.slice(0, 200)}... <span class="ver-mas" onclick="verMas(${id})">Ver más</span>` 
+            : descripcionCompleta;
+        descripcionElement.innerHTML = descripcionCorta;
     }
     
     function compartirPublicacion(publicacionId) {
@@ -677,39 +681,64 @@
         }
     });
 
-form.addEventListener("submit", function (e) {
-    e.preventDefault();
-
-    const formData = new FormData();
-    formData.append("descripcion", textarea.value);
-    formData.append("es_publico", true); 
-    if (imagenInput.files.length > 0) {
-        formData.append("imagen", imagenInput.files[0]);
-    }
-
-    fetch("/api/publicaciones/nueva/", {
-        method: "POST",
-        headers: {
-            "X-CSRFToken": csrfToken
-        },
-        body: formData
-    })
-    .then(res => res.json())
-    .then(data => {
-        if (data.success) {
-            textarea.value = "";
-            imagenInput.value = "";
-
-            // Reiniciar paginación y recargar desde cero
-            offset = 0;
-            finDePublicaciones = false;
-            document.getElementById('mensaje-fin').style.display = 'none';
-            cargarPublicaciones(window.usuarioId, false); 
-        } else {
-            alert("Error al publicar");
+    form.addEventListener("submit", function (e) {
+        e.preventDefault();
+    
+        const formData = new FormData();
+        formData.append("descripcion", textarea.value);
+        formData.append("es_publico", true); 
+        if (imagenInput.files.length > 0) {
+            formData.append("imagen", imagenInput.files[0]);
         }
-    })
-    .catch(err => {
-        console.error("Error al enviar publicación:", err);
+    
+        fetch("/api/publicaciones/nueva/", {
+            method: "POST",
+            headers: {
+                "X-CSRFToken": csrfToken
+            },
+            body: formData
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                textarea.value = "";
+                imagenInput.value = "";
+    
+                // Limpiar preview de imagen
+                const previewImagen = document.getElementById("preview-imagen");
+                const previewImg = document.getElementById("preview-img");
+                previewImg.src = "";
+                previewImagen.style.display = "none";
+    
+                // Reiniciar paginación y recargar desde cero
+                offset = 0;
+                finDePublicaciones = false;
+                document.getElementById('mensaje-fin').style.display = 'none';
+                cargarPublicaciones(window.usuarioId, false); 
+            } else {
+                alert("Error al publicar");
+            }
+        })
+        .catch(err => {
+            console.error("Error al enviar publicación:", err);
+        });
     });
-});
+    
+    // Mostrar preview de imagen al seleccionar archivo
+    imagenInput.addEventListener("change", function () {
+        const previewImagen = document.getElementById("preview-imagen");
+        const previewImg = document.getElementById("preview-img");
+    
+        if (this.files && this.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                previewImg.src = e.target.result;
+                previewImagen.style.display = "block";
+            };
+            reader.readAsDataURL(this.files[0]);
+        } else {
+            previewImg.src = "";
+            previewImagen.style.display = "none";
+        }
+    });
+    

@@ -18,7 +18,12 @@
                 <div>
                     <h2 class="fw-bold mb-1">{{ trabajo.titulo }}</h2>
                     <p class="mb-0 text-muted">
-                        Publicado por <strong>{{ trabajo.autor.nombre }} {{ trabajo.autor.apellidos }}</strong><br>
+                        Publicado por 
+                        <strong>
+                            <a href="{% url 'profile' trabajo.autor.id %}" class="text-decoration-none text-dark">
+                                {{ trabajo.autor.nombre }} {{ trabajo.autor.apellidos }}
+                            </a>
+                        </strong><br>
                         <small class="text-secondary">Publicado el {{ trabajo.fecha_publicacion|date:"d M Y" }}</small>
                     </p>
                 </div>

@@ -159,8 +159,8 @@
                         </div>
                     </li>
                     <li><hr class="dropdown-divider"></li>
-                    <li><a class="dropdown-item d-flex justify-content-between" href="#"><span><img src="{% static 'images/feedback.png' %}" width="16"> Feedback</span> <span>&gt;</span></a></li>
-                    <li><a class="dropdown-item d-flex justify-content-between" href="#"><span><img src="{% static 'images/setting.png' %}" width="16"> Settings & Privacy</span> <span>&gt;</span></a></li>
+                    <!-- <li><a class="dropdown-item d-flex justify-content-between" href="#"><span><img src="{% static 'images/feedback.png' %}" width="16"> Feedback</span> <span>&gt;</span></a></li> -->
+                    <li><a class="dropdown-item d-flex justify-content-between" href="{% url 'settings_usuario_view' %}"><span><img src="{% static 'images/setting.png' %}" width="16"> Settings & Privacy</span> <span>&gt;</span></a></li>
                     <li><a class="dropdown-item d-flex justify-content-between" href="#"><span><img src="{% static 'images/help.png' %}" width="16"> Help & Support</span> <span>&gt;</span></a></li>
                     <li><a class="dropdown-item d-flex justify-content-between" href="#"><span><img src="{% static 'images/display.png' %}" width="16"> Display & Accessibility</span> <span>&gt;</span></a></li>
                     <li><a class="dropdown-item d-flex justify-content-between" href="{% url 'logout' %}"><span><img src="{% static 'images/logout.png' %}" width="16"> Logout</span> <span>&gt;</span></a></li>

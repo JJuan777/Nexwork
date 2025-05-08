@@ -1266,3 +1266,60 @@ def eliminar_notificacion(request):
         return JsonResponse({'success': True})
     except Notificacion.DoesNotExist:
         return JsonResponse({'success': False, 'error': 'No encontrada'}, status=404)
+
+@login_required
+def settings_usuario_view(request):
+    return render(request, 'Nexwork/settings_usuario.html') 
+
+@login_required
+def api_get_user_settings(request):
+    usuario = request.user
+    data = {
+        "nombre": usuario.nombre,
+        "apellidos": usuario.apellidos,
+        "correo": usuario.correo,
+        "usuario": usuario.usuario,
+        "ocupacion": usuario.ocupacion if usuario.ocupacion else "",
+    }
+    return JsonResponse(data)
+
+@login_required
+@csrf_exempt
+def api_update_user_settings(request):
+    if request.method == "POST":
+        data = json.loads(request.body)
+        usuario = request.user
+
+        # Actualizar los datos del usuario
+        usuario.nombre = data.get("nombre", usuario.nombre)
+        usuario.apellidos = data.get("apellidos", usuario.apellidos)
+        usuario.correo = data.get("correo", usuario.correo)
+        usuario.usuario = data.get("usuario", usuario.usuario)
+        usuario.ocupacion = data.get("ocupacion", usuario.ocupacion)
+        usuario.save()
+
+        return JsonResponse({"success": True, "message": "Cambios guardados correctamente."})
+    
+    return JsonResponse({"success": False, "message": "Método no permitido."}, status=405)
+
+@login_required
+@csrf_exempt
+def api_update_password(request):
+    if request.method == "POST":
+        data = json.loads(request.body)
+        nueva_contrasena = data.get("nueva_contrasena")
+        confirmar_contrasena = data.get("confirmar_contrasena")
+
+        if nueva_contrasena != confirmar_contrasena:
+            return JsonResponse({"success": False, "message": "Las contraseñas no coinciden."})
+
+        if len(nueva_contrasena) < 8:
+            return JsonResponse({"success": False, "message": "La contraseña debe tener al menos 8 caracteres."})
+
+        usuario = request.user
+        usuario.set_password(nueva_contrasena)
+        usuario.save()
+
+        return JsonResponse({"success": True, "message": "Contraseña actualizada correctamente."})
+    
+    return JsonResponse({"success": False, "message": "Método no permitido."}, status=405)
