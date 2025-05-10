@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from .models import Usuario, Rol, Publicacion, SolicitudAmistad, Amistad, Like, Comentario, PublicacionCompartida, ExperienciaLaboral,Educacion
-from .models import Trabajo, Postulacion, TrabajoDetalle, VistaTrabajo, VisitaPerfil, Notificacion
+from .models import Trabajo, Postulacion, TrabajoDetalle, VistaTrabajo, VisitaPerfil, Notificacion, Conversacion, Mensaje
 
 
 class UsuarioAdmin(BaseUserAdmin):
@@ -168,10 +168,43 @@ class NotificacionAdmin(admin.ModelAdmin):
         return (obj.mensaje[:50] + '...') if len(obj.mensaje) > 50 else obj.mensaje
     mensaje_corto.short_description = 'Mensaje'
 
+class MensajeAdmin(admin.ModelAdmin):
+    list_display = ('id', 'conversacion', 'remitente', 'texto_corto', 'tiene_imagen', 'tiene_archivo', 'enviado_en')
+    search_fields = ('remitente__usuario', 'texto')
+    list_filter = ('enviado_en',)
+    ordering = ('-enviado_en',)
+
+    def texto_corto(self, obj):
+        return (obj.texto[:50] + '...') if obj.texto and len(obj.texto) > 50 else obj.texto or "Sin texto"
+    texto_corto.short_description = 'Texto'
+
+    def tiene_imagen(self, obj):
+        return bool(obj.imagen)
+    tiene_imagen.boolean = True
+    tiene_imagen.short_description = 'Imagen'
+
+    def tiene_archivo(self, obj):
+        return bool(obj.archivo)
+    tiene_archivo.boolean = True
+    tiene_archivo.short_description = 'Archivo'
+
+
+class ConversacionAdmin(admin.ModelAdmin):
+    list_display = ('id', 'participantes_list', 'creado_en', 'actualizado_en')
+    search_fields = ('participantes__usuario',)
+    list_filter = ('creado_en', 'actualizado_en')
+    ordering = ('-actualizado_en',)
+
+    def participantes_list(self, obj):
+        return ", ".join([usuario.usuario for usuario in obj.participantes.all()])
+    participantes_list.short_description = 'Participantes'
+
 
 # Registro de modelos
 admin.site.register(Usuario, UsuarioAdmin)
 admin.site.register(Notificacion, NotificacionAdmin)
+admin.site.register(Conversacion, ConversacionAdmin)
+admin.site.register(Mensaje, MensajeAdmin)
 admin.site.register(PublicacionCompartida, PublicacionCompartidaAdmin)
 admin.site.register(VisitaPerfil, VisitaPerfilAdmin)
 admin.site.register(ExperienciaLaboral, ExperienciaLaboralAdmin)

@@ -72,7 +72,11 @@ urlpatterns = [
     path('api/notificaciones/marcar-leida/', views.marcar_notificacion_leida, name='marcar_notificacion_leida'),
     path('api/notificaciones/eliminar/', views.eliminar_notificacion, name='eliminar_notificacion'),
 
-    path('mensajes/', views.mensaje_view, name='mensaje_view')
+    path('mensajes/', views.mensaje_view, name='mensaje_view'),
+    path('api/conversaciones/', views.listar_conversaciones_api, name='api_listar_conversaciones'),
+    path('api/amistades/', views.listar_amistades_api, name='api_listar_amistades'),
+    path('api/mensajes/<int:conversacion_id>/', views.cargar_mensajes_api, name='api_cargar_mensajes'),
+    path('api/mensajes/<int:conversacion_id>/enviar/', views.enviar_mensaje_api, name='api_enviar_mensaje'),
 
 
 ]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

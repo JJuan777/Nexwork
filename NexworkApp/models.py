@@ -105,7 +105,6 @@ class SolicitudAmistad(models.Model):
     def __str__(self):
         return f"{self.de_usuario} → {self.para_usuario} ({self.estado})"
 
-
 class Amistad(models.Model):
     usuario1 = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -312,3 +311,23 @@ class Notificacion(models.Model):
 
     class Meta:
         ordering = ['-fecha']
+
+class Conversacion(models.Model):
+    participantes = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name='conversaciones')
+    creado_en = models.DateTimeField(auto_now_add=True)
+    actualizado_en = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"Conversación {self.id} - {', '.join([p.usuario for p in self.participantes.all()])}"
+
+
+class Mensaje(models.Model):
+    conversacion = models.ForeignKey(Conversacion, on_delete=models.CASCADE, related_name='mensajes')
+    remitente = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='mensajes_enviados')
+    texto = models.TextField(blank=True, null=True)
+    imagen = models.BinaryField(blank=True, null=True)  # Para imágenes
+    archivo = models.FileField(upload_to='mensajes_archivos/', blank=True, null=True)  # Para archivos
+    enviado_en = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Mensaje de {self.remitente.usuario} en Conversación {self.conversacion.id}"

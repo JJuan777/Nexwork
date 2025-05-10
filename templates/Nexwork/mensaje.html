@@ -1,13 +1,24 @@
 {% extends 'Nexwork/layouts/layoutHome.html' %}
 {% load static %}
-{% block title %}mensajes{% endblock %}
+{% block title %}Mensajes{% endblock %}
 
 {% block content %}
 <div class="contenedor-fluid-full py-4">
-
+    <div class="row">
+        <div class="col-md-4 chat-sidebar">
+            <h5>Conversaciones</h5>
+            <input type="text" id="buscar-amigos" class="form-control mb-2" placeholder="Buscar amigos..." oninput="filtrarAmigos()">
+            <ul id="amigos-list" class="list-group"></ul>
+        </div>
+        <div class="col-md-8 chat-content">
+            <div id="chat-messages" class="chat-messages border"></div>
+            <div class="chat-input mt-2">
+                <input type="text" id="mensaje-input" class="form-control" placeholder="Escribe un mensaje...">
+                <button class="btn btn-primary" onclick="enviarMensaje()">Enviar</button>
+            </div>
+        </div>
+    </div>
 </div>
 
-
 <script src="{% static 'js/Nexwork/mensaje.js' %}"></script>
-
 {% endblock %}

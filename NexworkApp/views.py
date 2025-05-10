@@ -15,6 +15,7 @@ from datetime import date
 from .models import Usuario
 from .models import Publicacion, Amistad, Like, Comentario, PublicacionCompartida, SolicitudAmistad
 from .models import ExperienciaLaboral, Educacion, Rol
+from .models import Conversacion, Mensaje
 from django.utils.dateparse import parse_date
 from .models import Trabajo, Postulacion
 import json
@@ -1327,3 +1328,87 @@ def api_update_password(request):
 @login_required
 def mensaje_view(request):
     return render(request, 'Nexwork/mensaje.html') 
+
+@login_required
+def listar_conversaciones_api(request):
+    usuario = request.user
+    conversaciones = Conversacion.objects.filter(participantes=usuario).distinct()
+    
+    data = []
+    for conversacion in conversaciones:
+        ultimo_mensaje = conversacion.mensajes.last()
+        data.append({
+            'id': conversacion.id,
+            'participantes': [u.usuario for u in conversacion.participantes.all() if u != usuario],
+            'ultimo_mensaje': ultimo_mensaje.texto if ultimo_mensaje else 'Sin mensajes',
+            'fecha_ultimo_mensaje': ultimo_mensaje.enviado_en if ultimo_mensaje else '',
+        })
+    
+    return JsonResponse({'conversaciones': data})
+
+@login_required
+def listar_amistades_api(request):
+    usuario = request.user
+    amistades = Amistad.objects.filter(usuario1=usuario) | Amistad.objects.filter(usuario2=usuario)
+    amigos = []
+
+    for amistad in amistades:
+        amigo = amistad.usuario2 if amistad.usuario1 == usuario else amistad.usuario1
+        
+        # Convertir la imagen en base64 si existe
+        if amigo.img_profile:
+            img_base64 = f"data:image/jpeg;base64,{base64.b64encode(amigo.img_profile).decode('utf-8')}"
+        else:
+            img_base64 = ''
+
+        amigos.append({
+            'id': amigo.id,
+            'usuario': amigo.usuario,
+            'nombre': amigo.nombre,
+            'img_profile': img_base64
+        })
+
+    return JsonResponse({'amigos': amigos})
+
+@login_required
+def cargar_mensajes_api(request, conversacion_id):
+    conversacion = get_object_or_404(Conversacion, id=conversacion_id, participantes=request.user)
+    mensajes = conversacion.mensajes.order_by('enviado_en')
+
+    data = [
+        {
+            'id': mensaje.id,
+            'texto': mensaje.texto,
+            'es_mio': mensaje.remitente == request.user
+        }
+        for mensaje in mensajes
+    ]
+
+    return JsonResponse({'mensajes': data})
+
+@login_required
+def enviar_mensaje_api(request, conversacion_id):
+    if request.method == 'POST':
+        conversacion = get_object_or_404(Conversacion, id=conversacion_id, participantes=request.user)
+        data = json.loads(request.body)
+        texto = data.get('texto')
+
+        if texto:
+            mensaje = Mensaje.objects.create(
+                conversacion=conversacion,
+                remitente=request.user,
+                texto=texto
+            )
+
+            return JsonResponse({
+                'success': True,
+                'mensaje': {
+                    'id': mensaje.id,
+                    'texto': mensaje.texto,
+                    'es_mio': True
+                }
+            })
+        else:
+            return JsonResponse({'success': False, 'error': 'El mensaje no puede estar vacío.'}, status=400)
+
+    return JsonResponse({'success': False, 'error': 'Método no permitido.'}, status=405)
