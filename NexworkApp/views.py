@@ -27,6 +27,7 @@ from django.db import models
 from django.db.models import Count
 from .models import VistaTrabajo,VisitaPerfil
 from .models import Notificacion
+from django.utils.html import escape
 
 # Create your views here.
 @login_required
@@ -1332,18 +1333,29 @@ def mensaje_view(request):
 @login_required
 def listar_conversaciones_api(request):
     usuario = request.user
-    conversaciones = Conversacion.objects.filter(participantes=usuario).distinct()
-    
+    conversaciones = Conversacion.objects.filter(participantes=usuario, mensajes__isnull=False).distinct()
+
     data = []
     for conversacion in conversaciones:
         ultimo_mensaje = conversacion.mensajes.last()
-        data.append({
-            'id': conversacion.id,
-            'participantes': [u.usuario for u in conversacion.participantes.all() if u != usuario],
-            'ultimo_mensaje': ultimo_mensaje.texto if ultimo_mensaje else 'Sin mensajes',
-            'fecha_ultimo_mensaje': ultimo_mensaje.enviado_en if ultimo_mensaje else '',
-        })
-    
+        if ultimo_mensaje:
+            for participante in conversacion.participantes.all():
+                if participante != usuario:
+                    # Verificar si el usuario tiene imagen de perfil
+                    if participante.img_profile:
+                        img_data = base64.b64encode(participante.img_profile).decode('utf-8')
+                        img_url = f"data:image/png;base64,{img_data}"
+                    else:
+                        img_url = static('images/Nexwork/default-profile.png')
+
+                    data.append({
+                        'id': conversacion.id,
+                        'participante_nombre': participante.usuario,
+                        'img_url': img_url,
+                        'ultimo_mensaje': escape(ultimo_mensaje.texto),
+                        'fecha_ultimo_mensaje': ultimo_mensaje.enviado_en,
+                    })
+
     return JsonResponse({'conversaciones': data})
 
 @login_required
@@ -1371,8 +1383,24 @@ def listar_amistades_api(request):
     return JsonResponse({'amigos': amigos})
 
 @login_required
-def cargar_mensajes_api(request, conversacion_id):
-    conversacion = get_object_or_404(Conversacion, id=conversacion_id, participantes=request.user)
+def cargar_mensajes_api(request, conversacion_id=None):
+    usuario = request.user
+
+    # Si el ID de conversación es nulo o no existe, crear la conversación
+    if conversacion_id is None or not Conversacion.objects.filter(id=conversacion_id, participantes=usuario).exists():
+        # Crear una nueva conversación entre el usuario autenticado y otro participante (requiere definir el otro participante)
+        otro_usuario_id = request.GET.get("otro_usuario_id")
+        if otro_usuario_id:
+            otro_usuario = get_object_or_404(Usuario, id=otro_usuario_id)
+            conversacion, creada = Conversacion.objects.get_or_create()
+            conversacion.participantes.add(usuario, otro_usuario)
+            conversacion.save()
+        else:
+            return JsonResponse({'error': 'Debe especificar el otro usuario para crear la conversación.'}, status=400)
+    else:
+        conversacion = get_object_or_404(Conversacion, id=conversacion_id, participantes=usuario)
+
+    # Obtener mensajes de la conversación
     mensajes = conversacion.mensajes.order_by('enviado_en')
 
     data = [
@@ -1384,7 +1412,7 @@ def cargar_mensajes_api(request, conversacion_id):
         for mensaje in mensajes
     ]
 
-    return JsonResponse({'mensajes': data})
+    return JsonResponse({'mensajes': data, 'conversacion_id': conversacion.id})
 
 @login_required
 def enviar_mensaje_api(request, conversacion_id):
@@ -1412,3 +1440,58 @@ def enviar_mensaje_api(request, conversacion_id):
             return JsonResponse({'success': False, 'error': 'El mensaje no puede estar vacío.'}, status=400)
 
     return JsonResponse({'success': False, 'error': 'Método no permitido.'}, status=405)
+
+@login_required
+def filtrar_amigos(request):
+    query = request.GET.get('q', '')
+    usuario = request.user
+
+    amigos = Usuario.objects.filter(
+        Q(nombre__icontains=query) | Q(apellidos__icontains=query)
+    ).exclude(id=usuario.id)[:5]  # Limitar a 5 resultados
+
+    amigos_data = []
+
+    for amigo in amigos:
+        # Buscar la conversación entre el usuario y el amigo
+        conversacion = Conversacion.objects.filter(participantes=usuario).filter(participantes=amigo).first()
+        
+        # Obtener la imagen del amigo
+        if amigo.img_profile:
+            img_data = base64.b64encode(amigo.img_profile).decode('utf-8')
+            img_url = f"data:image/png;base64,{img_data}"
+        else:
+            img_url = static('images/Nexwork/default-profile.png')
+        
+        amigos_data.append({
+            'id_conversacion': conversacion.id if conversacion else None,
+            'nombre': f"{amigo.nombre} {amigo.apellidos}",
+            'id_sesion': usuario.id,
+            'id_amigo': amigo.id,  # ID del amigo
+            'img_url': img_url  # URL de la imagen
+        })
+
+    return JsonResponse({'amigos': amigos_data})
+
+@login_required
+def crear_conversacion(request):
+    usuario = request.user
+    otro_usuario_id = request.GET.get('otro_usuario_id')
+
+    if not otro_usuario_id:
+        return JsonResponse({'error': 'No se proporcionó el ID del otro usuario.'}, status=400)
+
+    otro_usuario = get_object_or_404(Usuario, id=otro_usuario_id)
+
+    # Verificar si ya existe una conversación entre los dos
+    conversacion = Conversacion.objects.filter(
+        participantes=usuario
+    ).filter(participantes=otro_usuario).distinct().first()
+
+    # Crear la conversación si no existe
+    if not conversacion:
+        conversacion = Conversacion.objects.create()
+        conversacion.participantes.add(usuario, otro_usuario)
+        conversacion.save()
+
+    return JsonResponse({'id_conversacion': conversacion.id})

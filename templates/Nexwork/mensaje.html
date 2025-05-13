@@ -3,17 +3,37 @@
 {% block title %}Mensajes{% endblock %}
 
 {% block content %}
-<div class="contenedor-fluid-full py-4">
+<div class="container-fluid py-4">
     <div class="row">
-        <div class="col-md-4 chat-sidebar">
-            <h5>Conversaciones</h5>
+        <!-- Sidebar de Conversaciones -->
+        <div class="col-12 col-md-4 col-lg-3 chat-sidebar mb-3">
+            <h5 class="mb-3">Conversaciones</h5>
             <input type="text" id="buscar-amigos" class="form-control mb-2" placeholder="Buscar amigos..." oninput="filtrarAmigos()">
-            <ul id="amigos-list" class="list-group"></ul>
+            <ul id="amigos-list" class="list-group overflow-auto" style="max-height: 70vh;"></ul>
         </div>
-        <div class="col-md-8 chat-content">
-            <div id="chat-messages" class="chat-messages border"></div>
-            <div class="chat-input mt-2">
-                <input type="text" id="mensaje-input" class="form-control" placeholder="Escribe un mensaje...">
+
+        <!-- Área de Mensajes -->
+        <div class="col-12 col-md-8 col-lg-9 chat-content d-flex flex-column">
+            <!-- Encabezado de la Conversación -->
+            <div id="chat-header" class="chat-header d-none align-items-center mb-3 p-2 bg-light rounded shadow-sm transition-all">
+                <div class="d-flex align-items-center">
+                    <img id="img-amigo" src="{% static 'images/Nexwork/default-profile.png' %}" 
+                         alt="Imagen de perfil" 
+                         class="rounded-circle me-3 shadow-sm" 
+                         style="width: 50px; height: 50px; object-fit: cover; transition: all 0.3s ease;">
+                    <div>
+                        <h5 id="titulo-conversacion" class="mb-0 fw-bold text-primary">Selecciona una conversación</h5>
+                        <!-- <p class="text-muted mb-0" id="subtitulo-conversacion">Último mensaje aquí...</p> -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Mensajes de la Conversación -->
+            <div id="chat-messages" class="chat-messages flex-grow-1 border rounded p-3 overflow-auto d-none" style="height: 60vh;"></div>
+
+            <!-- Entrada de Mensajes -->
+            <div id="chat-input-container" class="chat-input mt-2 d-flex align-items-center d-none">
+                <input type="text" id="mensaje-input" class="form-control me-2" placeholder="Escribe un mensaje...">
                 <button class="btn btn-primary" onclick="enviarMensaje()">Enviar</button>
             </div>
         </div>

@@ -77,6 +77,8 @@ urlpatterns = [
     path('api/amistades/', views.listar_amistades_api, name='api_listar_amistades'),
     path('api/mensajes/<int:conversacion_id>/', views.cargar_mensajes_api, name='api_cargar_mensajes'),
     path('api/mensajes/<int:conversacion_id>/enviar/', views.enviar_mensaje_api, name='api_enviar_mensaje'),
+    path('api/filtrar_amigos/', views.filtrar_amigos, name='filtrar_amigos'),
+    path('api/crear_conversacion/', views.crear_conversacion, name='crear_conversacion'),
 
 
 ]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
