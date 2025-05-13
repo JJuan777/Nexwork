@@ -331,3 +331,14 @@ class Mensaje(models.Model):
 
     def __str__(self):
         return f"Mensaje de {self.remitente.usuario} en Conversación {self.conversacion.id}"
+    
+
+class Historia(models.Model):
+    autor = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='historias')
+    imagen = models.BinaryField(null=True, blank=True)  # VARBINARY para imagen
+    texto = models.CharField(max_length=255, blank=True)  # opcional, como subtítulo o descripción
+    creado_en = models.DateTimeField(auto_now_add=True)
+    expirado = models.BooleanField(default=False)  # si ya pasó su tiempo de vida
+
+    def __str__(self):
+        return f"Historia de {self.autor.usuario} - {self.creado_en.strftime('%Y-%m-%d %H:%M')}"

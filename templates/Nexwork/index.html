@@ -87,6 +87,22 @@
         <div class="col-12 col-lg-6">
             <div class="main-content">
 
+               <!-- Historias tipo Instagram con navegación -->
+                <div class="mb-4 position-relative group-historias">
+                    <button id="btn-historias-left" class="btn btn-light shadow-sm position-absolute top-50 translate-middle-y d-none">
+                      <i class="fa-solid fa-chevron-left"></i>
+                    </button>
+                  
+                    <button id="btn-historias-right" class="btn btn-light shadow-sm position-absolute top-50 translate-middle-y d-none">
+                      <i class="fa-solid fa-chevron-right"></i>
+                    </button>
+                  
+                    <div id="contenedor-historias" class="historias-scroll d-flex gap-3 pb-2 px-4">
+                      <!-- Historias por JS -->
+                    </div>
+                </div>
+                  
+                
                 <form id="form-publicacion" class="mb-4">
                     {% csrf_token %}
                     <div class="card p-3">
@@ -231,6 +247,91 @@
     });
     </script>
     
+    <!-- Modal Crear Historia -->
+    <div class="modal fade" id="modalHistoria" tabindex="-1" aria-labelledby="modalHistoriaLabel" aria-hidden="true">
+        <div class="modal-dialog">
+        <form id="formHistoria" enctype="multipart/form-data" class="modal-content">
+            {% csrf_token %}
+            <div class="modal-header">
+            <h5 class="modal-title" id="modalHistoriaLabel">Crear historia</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+            <div class="modal-body">
+    
+            <!-- Vista previa -->
+            <div class="mb-3 text-center">
+                <img id="previewHistoriaImg" src="#" class="img-fluid rounded d-none" style="max-height: 200px;">
+            </div>
+    
+            <!-- Input imagen -->
+            <div class="mb-3">
+                <label for="inputHistoriaImg" class="form-label">Imagen</label>
+                <input type="file" class="form-control" id="inputHistoriaImg" name="imagen" accept="image/*" required>
+            </div>
+    
+            <!-- Texto historia -->
+            <div class="mb-3">
+                <label for="textoHistoria" class="form-label">Texto</label>
+                <input type="text" class="form-control" id="textoHistoria" name="texto" maxlength="255" placeholder="¿Qué quieres compartir?">
+            </div>
+    
+            </div>
+            <div class="modal-footer">
+            <button type="submit" class="btn btn-primary">Publicar</button>
+            </div>
+        </form>
+        </div>
+    </div>
+
+    <!-- Modal Ver Historia -->
+    <div class="modal fade" id="modalVerHistoria" tabindex="-1" aria-labelledby="modalVerHistoriaLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content bg-dark text-white position-relative overflow-hidden rounded-4 shadow-lg">
+    
+            <!-- Botón cerrar -->
+            <button type="button" class="btn-close btn-close-white position-absolute top-0 end-0 m-3 z-3" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+    
+            <!-- Navegación izquierda -->
+            <button id="btnAnteriorHistoria" class="btn position-absolute top-50 start-0 translate-middle-y text-white fs-3 z-3" style="background: none; border: none; display: none;">
+            <i class="fa-solid fa-chevron-left"></i>
+            </button>
+    
+            <!-- Navegación derecha -->
+            <button id="btnSiguienteHistoria" class="btn position-absolute top-50 end-0 translate-middle-y text-white fs-3 z-3" style="background: none; border: none; display: none;">
+            <i class="fa-solid fa-chevron-right"></i>
+            </button>
+    
+            <!-- Imagen + info -->
+            <div class="modal-body p-0 position-relative">
+    
+            <!-- Imagen -->
+            <img id="imagenVerHistoria" src="#" class="img-fluid w-100 rounded-top" alt="Historia" style="max-height: 70vh; object-fit: cover; transition: opacity 0.2s ease-in-out;">
+    
+            <!-- Autor + hora -->
+            <div class="position-absolute top-0 start-0 p-3 w-100 d-flex align-items-center justify-content-between" style="background: linear-gradient(to bottom, rgba(0,0,0,0.6), transparent);">
+                <div>
+                <p id="autorVerHistoria" class="mb-0 fw-semibold fs-6 text-white" style="text-shadow: 0 1px 2px rgba(0,0,0,0.6);"></p>
+                <small id="horaVerHistoria" class="text-light" style="text-shadow: 0 1px 2px rgba(0,0,0,0.6);"></small>
+                </div>
+            </div>
+    
+            <!-- Texto de la historia -->
+            <div class="position-absolute bottom-0 start-0 end-0 bg-gradient p-3 text-white" style="background: linear-gradient(to top, rgba(0,0,0,0.7), transparent);">
+                <p id="textoVerHistoria" class="mb-0 fs-6 fw-light" style="text-shadow: 0 1px 2px rgba(0,0,0,0.6);"></p>
+            </div>
+            </div>
+    
+            <!-- Botón eliminar -->
+            <div class="modal-footer justify-content-start bg-dark border-0 d-none" id="footerEliminarHistoria">
+            <button id="btnEliminarHistoria" class="btn btn-outline-danger btn-sm">
+                <i class="fa-solid fa-trash"></i> Eliminar historia
+            </button>
+            </div>
+        </div>
+        </div>
+    </div>
+  
 
 <script src="{% static 'js/Nexwork/publicaciones.js' %}"></script>
+<script src="{% static 'js/Nexwork/historias.js' %}"></script>
 {% endblock %}

@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from .models import Usuario, Rol, Publicacion, SolicitudAmistad, Amistad, Like, Comentario, PublicacionCompartida, ExperienciaLaboral,Educacion
-from .models import Trabajo, Postulacion, TrabajoDetalle, VistaTrabajo, VisitaPerfil, Notificacion, Conversacion, Mensaje
+from .models import Trabajo, Postulacion, TrabajoDetalle, VistaTrabajo, VisitaPerfil, Notificacion, Conversacion, Mensaje, Historia
 
 
 class UsuarioAdmin(BaseUserAdmin):
@@ -188,7 +188,6 @@ class MensajeAdmin(admin.ModelAdmin):
     tiene_archivo.boolean = True
     tiene_archivo.short_description = 'Archivo'
 
-
 class ConversacionAdmin(admin.ModelAdmin):
     list_display = ('id', 'participantes_list', 'creado_en', 'actualizado_en')
     search_fields = ('participantes__usuario',)
@@ -199,12 +198,23 @@ class ConversacionAdmin(admin.ModelAdmin):
         return ", ".join([usuario.usuario for usuario in obj.participantes.all()])
     participantes_list.short_description = 'Participantes'
 
+class HistoriaAdmin(admin.ModelAdmin):
+    list_display = ('id', 'autor_usuario', 'texto', 'creado_en', 'expirado')
+    search_fields = ('autor__usuario', 'autor__nombre', 'texto')
+    list_filter = ('expirado', 'creado_en')
+    ordering = ('-creado_en',)
+
+    def autor_usuario(self, obj):
+        return obj.autor.usuario
+    autor_usuario.short_description = 'Autor'
+
 
 # Registro de modelos
 admin.site.register(Usuario, UsuarioAdmin)
 admin.site.register(Notificacion, NotificacionAdmin)
 admin.site.register(Conversacion, ConversacionAdmin)
 admin.site.register(Mensaje, MensajeAdmin)
+admin.site.register(Historia, HistoriaAdmin)
 admin.site.register(PublicacionCompartida, PublicacionCompartidaAdmin)
 admin.site.register(VisitaPerfil, VisitaPerfilAdmin)
 admin.site.register(ExperienciaLaboral, ExperienciaLaboralAdmin)

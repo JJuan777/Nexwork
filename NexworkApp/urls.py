@@ -6,6 +6,11 @@ from . import views
 
 urlpatterns = [
     path('', views.home_view, name='home'),
+    #HISTORIAs
+    path('api/historias/', views.historias_amistades_view, name='api_historias'),
+    path('api/historias/publicar/', views.publicar_historia_view, name='publicar_historia'),
+    path('api/historias/eliminar/<int:id>/', views.eliminar_historia_view, name='eliminar_historia'),
+
 
     path('login', views.login_view, name='login'),
     path('registro/', views.registro_view, name='registro'),

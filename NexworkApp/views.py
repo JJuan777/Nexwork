@@ -1,5 +1,5 @@
 from django.shortcuts import render, get_object_or_404,redirect
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponseForbidden
 from .models import Publicacion
 from django.core.serializers import serialize
 from django.utils.dateformat import DateFormat
@@ -15,7 +15,7 @@ from datetime import date
 from .models import Usuario
 from .models import Publicacion, Amistad, Like, Comentario, PublicacionCompartida, SolicitudAmistad
 from .models import ExperienciaLaboral, Educacion, Rol
-from .models import Conversacion, Mensaje
+from .models import Conversacion, Mensaje, Historia
 from django.utils.dateparse import parse_date
 from .models import Trabajo, Postulacion
 import json
@@ -28,6 +28,8 @@ from django.db.models import Count
 from .models import VistaTrabajo,VisitaPerfil
 from .models import Notificacion
 from django.utils.html import escape
+from base64 import b64encode
+from django.utils.timesince import timesince
 
 # Create your views here.
 @login_required
@@ -1495,3 +1497,70 @@ def crear_conversacion(request):
         conversacion.save()
 
     return JsonResponse({'id_conversacion': conversacion.id})
+
+@login_required
+def historias_amistades_view(request):
+    usuario = request.user
+
+    # Obtener IDs de amigos (bidireccional)
+    amigos_ids_1 = Amistad.objects.filter(usuario1=usuario).values_list('usuario2', flat=True)
+    amigos_ids_2 = Amistad.objects.filter(usuario2=usuario).values_list('usuario1', flat=True)
+    amigos_ids = set(amigos_ids_1).union(set(amigos_ids_2))
+
+    # Agregar el propio usuario
+    amigos_ids.add(usuario.id)
+
+    # Filtrar historias no expiradas
+    historias = Historia.objects.filter(
+        autor__id__in=amigos_ids,
+        expirado=False
+    ).order_by('-creado_en')[:30]
+
+    historias_data = []
+    for h in historias:
+        imagen_base64 = None
+        if h.imagen:
+            try:
+                imagen_base64 = f"data:image/jpeg;base64,{b64encode(h.imagen).decode()}"
+            except Exception as e:
+                print(f"⚠️ Error al codificar imagen de la historia {h.id}: {e}")
+
+        historias_data.append({
+        'id': h.id,
+        'nombre': f"{h.autor.nombre} {h.autor.apellidos}",
+        'imagen': imagen_base64,
+        'texto': h.texto or "",
+        'es_mia': h.autor_id == usuario.id,
+        'autor': f"{h.autor.nombre} {h.autor.apellidos}",
+        'hora': timesince(h.creado_en) + " atrás"
+    })
+
+    return JsonResponse({'historias': historias_data})
+
+@csrf_exempt
+@require_POST
+@login_required
+def publicar_historia_view(request):
+    usuario = request.user
+    imagen = request.FILES.get('imagen')
+    texto = request.POST.get('texto', '').strip()
+
+    if not imagen:
+        return JsonResponse({'error': 'Imagen requerida'}, status=400)
+
+    historia = Historia.objects.create(
+        autor=usuario,
+        imagen=imagen.read(),  # guardamos como binario
+        texto=texto
+    )
+    return JsonResponse({'success': True, 'historia_id': historia.id})
+
+@require_http_methods(["DELETE"])
+@login_required
+def eliminar_historia_view(request, id):
+    try:
+        historia = Historia.objects.get(id=id, autor=request.user)
+        historia.delete()
+        return JsonResponse({'success': True})
+    except Historia.DoesNotExist:
+        return HttpResponseForbidden("No tienes permiso para eliminar esta historia.")
