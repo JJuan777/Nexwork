@@ -1,0 +1,1 @@
+web: python manage.py runserver && gunicorn LearnXproject.wsgi

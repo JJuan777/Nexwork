@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 """
 
 from pathlib import Path
+import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -25,7 +26,10 @@ SECRET_KEY = 'django-insecure-)qcw4pl%l-@@h*u7m-ayoml$1!#x=^ycl3gef+^j8+e=)p@sy6
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+#PRODUCCIÓN
+ALLOWED_HOSTS = ['localhost', 'learnx.up.railway.app']
+PORT = os.getenv('PORT', '8088')
+CSRF_TRUSTED_ORIGINS = ['https://learnx.up.railway.app']
 
 
 # Application definition
@@ -139,3 +143,6 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
+WHITENOISE_IGNORE_PATTERNS = ["*.map"]
