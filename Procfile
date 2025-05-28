@@ -1,1 +1,1 @@
-web: python manage.py runserver && gunicorn LearnXproject.wsgi
+web: python manage.py runserver && gunicorn NexworkProject.wsgi
