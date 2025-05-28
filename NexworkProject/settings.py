@@ -27,9 +27,9 @@ SECRET_KEY = 'django-insecure-)qcw4pl%l-@@h*u7m-ayoml$1!#x=^ycl3gef+^j8+e=)p@sy6
 DEBUG = True
 
 #PRODUCCIÓN
-ALLOWED_HOSTS = ['localhost', 'learnx.up.railway.app']
+ALLOWED_HOSTS = ['localhost', 'xd.up.railway.app']
 PORT = os.getenv('PORT', '8088')
-CSRF_TRUSTED_ORIGINS = ['https://learnx.up.railway.app']
+CSRF_TRUSTED_ORIGINS = ['https://xd.up.railway.app']
 
 
 # Application definition
