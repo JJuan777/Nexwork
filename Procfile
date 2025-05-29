@@ -1,1 +1,1 @@
-web: python manage.py runserver && gunicorn NexworkProject.wsgi
+web: gunicorn NexworkProject.wsgi:application --bind 0.0.0.0:$PORT --workers 3
