@@ -28,7 +28,7 @@ DEBUG = True
 
 #PRODUCCIÓN
 ALLOWED_HOSTS = ['localhost', 'web-production-acff5.up.railway.app']
-PORT = os.getenv('PORT', '8088')
+PORT = os.getenv('PORT', '8081')
 CSRF_TRUSTED_ORIGINS = ['https://web-production-acff5.up.railway.app']
 
 
