@@ -15,7 +15,7 @@ COPY . .
 RUN python manage.py collectstatic --noinput
 
 # Expone el puerto en el que el contenedor escuchará
-EXPOSE 8000
+EXPOSE 8001
 
 # Comando para iniciar la aplicación usando Gunicorn
-CMD ["gunicorn", "NexworkProject.wsgi:application", "--bind", "0.0.0.0:8000", "--workers", "3"]
+CMD ["gunicorn", "NexworkProject.wsgi:application", "--bind", "0.0.0.0:8001", "--workers", "3"]

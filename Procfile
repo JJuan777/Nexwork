@@ -1,1 +1,0 @@
-web: python manage.py runserver && gunicorn NexworkProject.wsgi
