@@ -26,7 +26,7 @@ SECRET_KEY = 'django-insecure-)qcw4pl%l-@@h*u7m-ayoml$1!#x=^ycl3gef+^j8+e=)p@sy6
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['localhost', 'web-production-bb26.up.railway.app']
+ALLOWED_HOSTS = ['localhost', 'nexwork-app.up.railway.app']
 PORT = os.getenv('PORT', '8001')
 CSRF_TRUSTED_ORIGINS = ['https://web-production-bb26.up.railway.app']
 
