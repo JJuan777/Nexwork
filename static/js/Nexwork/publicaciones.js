@@ -87,6 +87,27 @@
                             
                             <!-- Autor original -->
                             <div class="post-author d-flex align-items-center mb-2">
+
+                            ${pub.es_mia ? `
+                                <div class="dropdown position-absolute top-0 end-0 mt-2 me-2">
+                                    <button class="btn btn-sm btn-light" type="button" data-bs-toggle="dropdown">
+                                        <i class="fa-solid fa-ellipsis-vertical"></i>
+                                    </button>
+                                    <ul class="dropdown-menu dropdown-menu-end">
+                                        <li>
+                                            <button class="dropdown-item" type="button" onclick="activarEdicionInline(${pub.id})">
+                                                Editar
+                                            </button>
+                                        </li>
+                                        <li>
+                                            <button class="dropdown-item text-danger" type="button" onclick="eliminarPublicacion(${pub.id}, ${pub.es_compartida})">
+                                                Eliminar
+                                            </button>
+                                        </li>
+                                    </ul>
+                                </div>
+                            ` : ''}                            
+                            
                                 <img src="${imgProfileSrc}" class="img-profile" alt="User">
                                 <div class="post-info ms-2">
                                     <h5 class="mb-0">
