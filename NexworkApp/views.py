@@ -1329,6 +1329,29 @@ def api_update_password(request):
     return JsonResponse({"success": False, "message": "Método no permitido."}, status=405)
 
 @login_required
+def eliminar_contacto(request, usuario_id):
+    if request.method == 'POST':
+        usuario_actual = request.user
+
+        # Eliminar amistad
+        amistad = Amistad.objects.filter(
+            Q(usuario1=usuario_actual, usuario2_id=usuario_id) |
+            Q(usuario2=usuario_actual, usuario1_id=usuario_id)
+        ).first()
+        if amistad:
+            amistad.delete()
+
+        # Eliminar cualquier solicitud entre ambos (enviada o recibida)
+        SolicitudAmistad.objects.filter(
+            Q(de_usuario=usuario_actual, para_usuario_id=usuario_id) |
+            Q(para_usuario=usuario_actual, de_usuario_id=usuario_id)
+        ).delete()
+
+        return JsonResponse({'success': True})
+    
+    return JsonResponse({'success': False, 'error': 'Método no permitido'}, status=405)
+
+@login_required
 def mensaje_view(request):
     return render(request, 'Nexwork/mensaje.html') 
 

@@ -63,15 +63,17 @@
                             ? pub.img_profile_compartido_por
                             : `${pub.img_profile_compartido_por}`;
                     
-                        compartidoHeader = `
+                            compartidoHeader = `
                             <div class="text-muted small mb-2 d-flex align-items-center gap-2">
                                 <i class="fa-solid fa-retweet text-primary"></i> Compartido por
-                                <strong>${pub.compartido_por}</strong> 
+                                <a href="/profile/view/${pub.autor_compartida_id}/" class="text-decoration-none fw-semibold text-dark">
+                                    ${pub.compartido_por}
                                 <img src="${imgCompartido}" class="rounded-circle" width="24" height="24" style="object-fit: cover;" alt="Img compartido">
+                                </a>
                             </div>
                             ${pub.comentario_compartido ? `
                             <p class="fst-italic text-secondary mb-2">${pub.comentario_compartido}</p>
-                            ` : ''}`;
+                            ` : ''}`;                        
                     }   
     
                     // Limitar descripción
@@ -108,13 +110,13 @@
                                 </div>
                             ` : ''}                            
                             
+                            <a href="/profile/view/${pub.autor_id}/" class="text-decoration-none d-flex align-items-center">
                                 <img src="${imgProfileSrc}" class="img-profile" alt="User">
                                 <div class="post-info ms-2">
-                                    <h5 class="mb-0">
-                                        <a href="/profile/view/${pub.autor_id}/" class="text-decoration-none text-dark">${pub.nombre}</a>
-                                    </h5>
+                                    <h5 class="mb-0 text-dark">${pub.nombre}</h5>
                                     <small class="text-muted">${pub.fecha}</small>
                                 </div>
+                            </a>
                             </div>
     
                             <!-- Descripción original -->

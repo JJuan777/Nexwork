@@ -160,3 +160,52 @@ function getCSRFToken() {
     }
     return '';
 }
+function eliminarContacto(usuarioId) {
+    Swal.fire({
+        title: '¿Eliminar contacto?',
+        text: 'Esta acción no se puede deshacer',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Sí, eliminar',
+        cancelButtonText: 'Cancelar',
+        reverseButtons: true
+    }).then((result) => {
+        if (result.isConfirmed) {
+            fetch(`/api/eliminar-contacto/${usuarioId}/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': getCSRFToken(),
+                }
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire({
+                        title: 'Eliminado',
+                        text: 'El contacto ha sido eliminado exitosamente.',
+                        icon: 'success',
+                        timer: 2000,
+                        showConfirmButton: false
+                    }).then(() => location.reload());
+                } else {
+                    Swal.fire({
+                        title: 'Error',
+                        text: 'No se pudo eliminar el contacto.',
+                        icon: 'error'
+                    });
+                }
+            })
+            .catch(() => {
+                Swal.fire({
+                    title: 'Error',
+                    text: 'Ocurrió un problema al comunicarse con el servidor.',
+                    icon: 'error'
+                });
+            });
+        }
+    });
+}
+
+function getCSRFToken() {
+    return document.querySelector('[name=csrfmiddlewaretoken]').value;
+}

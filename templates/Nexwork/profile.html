@@ -69,9 +69,10 @@
 		{% if request.user != usuario %}
 		<div class="position-absolute bottom-0 end-0 mb-3 me-4 d-none d-md-block">
 			{% if ya_son_amigos %}
-				<button id="btn-contacto" class="btn btn-primary rounded-pill d-flex align-items-center px-3 py-2 shadow" disabled>
-					<i class="fa-solid fa-user-check me-2"></i> Conectados
-				</button>
+			<button class="btn btn-danger rounded-pill d-flex align-items-center px-3 py-2 shadow"
+					onclick="eliminarContacto({{ usuario.id }})">
+				<i class="fa-solid fa-user-minus me-2"></i> Eliminar contacto
+			</button>
 			{% elif solicitud_pendiente %}
 				<button id="btn-contacto" class="btn btn-primary rounded-pill d-flex align-items-center px-3 py-2 shadow" disabled>
 					<i class="fa-solid fa-clock me-2"></i> Pendiente
