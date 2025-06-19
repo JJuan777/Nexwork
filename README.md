@@ -9,7 +9,7 @@
 </p>
 
 <p align="center">
-  <a href="#" target="_blank">
+  <a href="https://nexwork-app.up.railway.app/login" target="_blank">
     <img src="https://img.shields.io/badge/▶️ Probar Nexwork-Registro-blue?style=for-the-badge&logo=python" alt="Probar Nexwork">
   </a>
   &nbsp;
@@ -91,6 +91,13 @@ Este proyecto va más allá de un simple muro de publicaciones. Nexwork es un ec
 <summary><strong>📄 Acerca de y licencia</strong></summary>
 
 - [Ir a la sección](#-acerca-de-y-licencia)
+
+</details>
+
+<details>
+<summary><strong>📦 Despliegue en Railway</strong></summary>
+
+- [Despliegue en Railway](#deploy-railway)
 
 </details>
 
@@ -311,3 +318,54 @@ Este es un proyecto personal, de código abierto, distribuido bajo la **Licencia
 **Nexwork** se proporciona "tal cual", sin garantías de ningún tipo. El autor no se hace responsable de ningún daño, pérdida de datos o inconveniente causado por el uso del software.
 
 Si te gustó este proyecto, ¡considera motivar al desarrollador dejando una ⭐ en [GitHub](https://github.com/JJuan777/Nexwork)!
+
+
+<details>
+<summary><strong>📦 Despliegue en Railway</strong></summary>
+
+## 📦 Despliegue en Railway <a name="deploy-railway"></a>
+
+El proyecto fue desplegado en producción utilizando **[Railway](https://railway.app)**, una plataforma que permite automatizar la construcción y despliegue de aplicaciones con soporte para Docker y variables de entorno.
+
+### 🔧 Configuración utilizada
+
+- **Dockerfile**:
+
+```dockerfile
+FROM python:3.12
+WORKDIR /app
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+COPY . .
+RUN python manage.py collectstatic --noinput
+EXPOSE 8001
+CMD ["gunicorn", "NexworkProject.wsgi:application", "--bind", "0.0.0.0:8001", "--workers", "3"]
+```
+
+- **runtime.txt**:
+
+```txt
+3.12
+```
+
+- **settings.py (producción)**:
+
+```python
+ALLOWED_HOSTS = ['localhost', 'nexwork-app.up.railway.app']
+PORT = os.getenv('PORT', '8001')
+CSRF_TRUSTED_ORIGINS = ['https://web-production-bb26.up.railway.app']
+```
+
+### 🔄 Para otros entornos
+
+Para desplegar en otros servicios:
+
+- Cambia `ALLOWED_HOSTS` y `CSRF_TRUSTED_ORIGINS`.
+- Ajusta el puerto si es necesario.
+- Alternativamente, puedes usar un `Procfile`:
+
+```txt
+web: gunicorn NexworkProject.wsgi:application --bind 0.0.0.0:$PORT --workers 3
+```
+
+</details>
