@@ -5,146 +5,147 @@
 <h1 align="center">Nexwork</h1>
 
 <p align="center">
-  <img src="https://learnx.up.railway.app/static/media/Newwork/NexWorkApp2.gif" alt="Demo de Nexwork" width="90%">
+  <img src="https://learnx.up.railway.app/static/media/Newwork/NexWorkApp2.gif" alt="Nexwork Demo" width="90%">
 </p>
 
 <p align="center">
   <a href="https://nexwork-app.up.railway.app/login" target="_blank">
-    <img src="https://img.shields.io/badge/▶️ Probar Nexwork-Registro-blue?style=for-the-badge&logo=python" alt="Probar Nexwork">
+    <img src="https://img.shields.io/badge/▶️ Try Nexwork-Register-blue?style=for-the-badge&logo=python" alt="Try Nexwork">
   </a>
   &nbsp;
-  <a href="#" target="_blank">
-    <img src="https://img.shields.io/badge/ Ver demo-YouTube-red?style=for-the-badge&logo=youtube" alt="Ver demo en YouTube">
+  <a href="https://youtu.be/4KzoLzLYo2I?si=BWUPDV-vyRayag3F" target="_blank">
+    <img src="https://img.shields.io/badge/ Watch demo-YouTube-red?style=for-the-badge&logo=youtube" alt="Watch demo on YouTube">
   </a>
 </p>
 
-**Nexwork** es una red social profesional desarrollada con Django, inspirada en plataformas como LinkedIn, pero con un enfoque más simple, directo y personalizable.
+**Nexwork**  is a professional social network built with Django, inspired by platforms like LinkedIn, but with a simpler, more direct, and customizable approach.
 
-Este proyecto busca ofrecer un espacio donde los usuarios puedan construir un perfil profesional completo con su experiencia laboral, educación y habilidades, y así postularse a oportunidades laborales publicadas por otros usuarios. Nexwork facilita conexiones profesionales, comunicación en tiempo real y gestión activa del perfil, todo desde una interfaz intuitiva y responsiva.
+This project aims to provide a space where users can build a complete professional profile including work experience, education, and skills, and apply to job opportunities posted by other users. Nexwork enables professional connections, real-time communication, and active profile management — all from an intuitive and responsive interface.
 
-Este proyecto va más allá de un simple muro de publicaciones. Nexwork es un ecosistema completo de interacción profesional: incluye funcionalidades como historias, solicitudes de amistad, mensajería en tiempo real, y estadísticas graficadas sobre el alcance de las publicaciones. Todo desarrollado con una arquitectura moderna, completamente dinámica, fluida y responsive.
+This project goes beyond a simple post feed. Nexwork is a complete ecosystem of professional interaction: it includes features such as stories, friend requests, real-time messaging, and visual statistics to measure the reach of posts. All developed with a modern architecture that is fully dynamic, smooth, and responsive.
 
 ---
 
-## 📑 Índice
+## 📑 Table of Contents
 
 <details>
-<summary><strong>🎯 Propósito del proyecto</strong></summary>
+<summary><strong>🎯 Project Purpose</strong></summary>
 
-- [Ir a la sección](#-propósito-del-proyecto)
+- [Go to section](#-project-purpose)
 
 </details>
 
 <details>
-<summary><strong>📌 Distintividad y complejidad</strong></summary>
+<summary><strong>📌 Distinctiveness and Complexity</strong></summary>
 
-- [Ir a la sección](#-distintividad-y-complejidad)
-
-</details>
-
-<details>
-<summary><strong>⚙️ Tecnologías utilizadas</strong></summary>
-
-- [Ir a la sección](#️-tecnologías-utilizadas)
+- [Go to section](#-uniqueness-and-complexity)
 
 </details>
 
 <details>
-<summary><strong>🚀 Instalación y ejecución</strong></summary>
+<summary><strong>⚙️ Technologies Used</strong></summary>
 
-- [Ir a la sección](#-instalación-y-ejecución)
-
-</details>
-
-<details>
-<summary><strong>🔐 Credenciales de acceso</strong></summary>
-
-- [Ir a la sección](#-credenciales-de-acceso)
+- [Go to section](#-technologies-used)
 
 </details>
 
 <details>
-<summary><strong>💼 Cómo funciona Nexwork</strong></summary>
+<summary><strong>🚀 Installation & Execution</strong></summary>
 
-- [Cómo funciona Nexwork](#-cómo-funciona-nexwork)  
-  - [👤 Registro de usuarios](#-registro-de-usuarios)  
-  - [🖼️ Personalización del perfil](#️-personalización-del-perfil)  
-  - [📝 Publicaciones y contenido](#-publicaciones-y-contenido)  
-  - [🤝 Conexiones e interacción](#-conexiones-e-interacción)  
-  - [🎯 Postulaciones laborales](#-postulaciones-laborales)  
-  - [💡 Un espacio para destacar](#-un-espacio-para-destacar)
+- [Go to section](#-installation--execution)
 
 </details>
 
 <details>
-<summary><strong>🧠 Código y organización</strong></summary>
+<summary><strong>🔐 Access Credentials</strong></summary>
 
-- [Código y organización](#-código-y-organización)  
-  - [📦 App principal: NexworkApp](#-app-principal-nexworkapp)  
+- [Go to section](#-access-credentials)
+
+</details>
+
+<details>
+<summary><strong>💼 How Nexwork Works</strong></summary>
+
+- [How Nexwork Works](#-how-nexwork-works)  
+  - [👤 User Registration](#-user-registration)  
+  - [🖼️ Profile Customization](#️-profile-customization)  
+  - [📝 Posts and Content](#-posts-and-content)  
+  - [🤝 Connections and Interaction](#-connections-and-interaction)  
+  - [🎯 Job Applications](#-job-applications)  
+  - [💡 A Space to Stand Out](#-a-space-to-stand-out)
+
+</details>
+
+<details>
+<summary><strong>🧠 Code and Structure</strong></summary>
+
+- [Code and Structure](#-code-and-structure)  
+  - [📦 Main App: NexworkApp](#-main-app-nexworkapp)  
   - [🎨 Templates](#-templates)  
-  - [🖼️ Static files](#️-static-files)  
-  - [⚙️ Proyecto base: NexworkProject](#️-proyecto-base-nexworkproject)
+  - [🖼️ Static Files](#️-static-files)  
+  - [⚙️ Project Base: NexworkProject](#️-project-base-nexworkproject)
 
 </details>
 
 <details>
-<summary><strong>📄 Acerca de y licencia</strong></summary>
+<summary><strong>📄 About & License</strong></summary>
 
-- [Ir a la sección](#-acerca-de-y-licencia)
+- [Go to section](#-about--license)
 
 </details>
 
 <details>
-<summary><strong>📦 Despliegue en Railway</strong></summary>
+<summary><strong>📦 Railway Deployment</strong></summary>
 
-- [Despliegue en Railway](#deploy-railway)
+- [Railway Deployment](#deploy-railway)
 
 </details>
 
 ---
 
-## 🎯 Propósito del proyecto
+## 🎯 Project Purpose
 
-Nexwork surge como proyecto final para el curso [**CS50’s Web Programming with Python and JavaScript**](https://cs50.harvard.edu/web/2020/projects/final/capstone/), integrando todo lo aprendido sobre desarrollo web full-stack, con tecnologías modernas y patrones de diseño eficientes. A diferencia de proyectos básicos, Nexwork propone una solución profesional completa en la que los usuarios no solo crean un perfil, sino que participan activamente en una red viva de interacción profesional, empleabilidad y colaboración.
+Nexwork was created as the final project for the course [**CS50’s Web Programming with Python and JavaScript**](https://cs50.harvard.edu/web/2020/projects/final/capstone/), integrating everything learned about full-stack web development using modern technologies and efficient design patterns. 
 
----
-
-## 📌 Distintividad y complejidad
-
-Nexwork destaca por ofrecer un conjunto de funcionalidades avanzadas y una experiencia de usuario fluida, digna de una aplicación profesional. A continuación se detallan las principales características distintivas:
-
-| Funcionalidad                             | Descripción                                                                                                                                           |
-|------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 🔄 **Frontend dinámico**                  | Interacciones como publicaciones, comentarios, reacciones y solicitudes se actualizan por AJAX sin recargar la página.                              |
-| 💬 **Mensajería en tiempo real**         | Comunicación en vivo mediante WebSockets, gestionada con Django Channels.                                                                             |
-| 🪧 **Historias y publicaciones**          | Función tipo red social: publicaciones personales y públicas, con sistema de comentarios, likes y posibilidad de compartir.                          |
-| 📊 **Estadísticas visuales**             | Cada publicación muestra visualizaciones detalladas por ciudades, etiquetas y vistas, representadas con gráficas interactivas.                       |
-| 🤝 **Red de conexiones**                 | Los usuarios pueden enviar solicitudes de amistad, recibir notificaciones dinámicas y formar una red profesional.                                    |
-| 👤 **Perfil enriquecido y editable**      | Sección de perfil personalizable con experiencia laboral, estudios, foto de portada, imagen de perfil y datos de contacto.                           |
-| 🛠️ **Panel administrativo**             | Panel de control con administración de usuarios, publicaciones, postulaciones y seguimientos, con filtros optimizados.                              |
-
-> Estas funcionalidades convierten a **Nexwork** en una aplicación de alta complejidad, con múltiples módulos interconectados.  
-> Requiere dominio técnico tanto del frontend (**AJAX, JS, Chart.js, SweetAlert2**) como del backend (**Django, Channels, WebSockets, SQLite**), y un enfoque UX responsivo adaptado a múltiples dispositivos.
-
-## ⚙️ Tecnologías utilizadas
-
-| Categoría                    | Tecnologías                                   |
-|-----------------------------|-----------------------------------------------|
-| **Backend**                 | Django 5.0.9, Django Channels                  |
-| **Base de datos**           | SQLite                                        |
-| **Frontend**                | HTML5, JavaScript (AJAX), Bootstrap 5.3.3, SweetAlert2 |
-| **Comunicación en tiempo real** | WebSockets (Django Channels)             |
-| **Gráficas**                | Chart.js                                      |
-| **Archivos estáticos**      | WhiteNoise                                    |
-| **Entorno**                 | Python 3.x, SQLite3                           |
-
+Unlike basic projects, Nexwork offers a complete professional solution where users not only build a profile but also actively engage in a dynamic network of professional interaction, employment opportunities, and collaboration.
 
 ---
 
-## 🚀 Instalación y ejecución
+## 📌 Distinctiveness and Complexity
+
+Nexwork stands out by offering a set of advanced features and a smooth user experience, worthy of a professional-grade application. Below are the main distinctive features:
+
+| Feature                                 | Description                                                                                                                                           |
+|----------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 🔄 **Dynamic Frontend**                | Interactions such as posts, comments, reactions, and requests are updated via AJAX without reloading the page.                                       |
+| 💬 **Real-Time Messaging**             | Live communication through WebSockets, managed using Django Channels.                                                                                |
+| 🪧 **Stories and Posts**               | Social network-style functionality: users can create personal or public posts, with support for comments, likes, and sharing.                        |
+| 📊 **Visual Statistics**               | Each post shows detailed view statistics by city, tags, and total reach, displayed using interactive charts.                                         |
+| 🤝 **Connection Network**              | Users can send friend requests, receive real-time notifications, and build a professional network.                                                   |
+| 👤 **Rich and Editable Profiles**      | Customizable profiles with work experience, education, cover photo, profile image, and contact information.                                          |
+| 🛠️ **Admin Panel**                    | Management panel for users, posts, job applications, and follow-ups, with optimized filtering tools.                                                 |
+
+> These features make **Nexwork** a high-complexity application, with multiple interconnected modules.  
+> It requires technical proficiency in both frontend (**AJAX, JS, Chart.js, SweetAlert2**) and backend (**Django, Channels, WebSockets, SQLite**), as well as a responsive UX approach suitable for all devices.
+
+## ⚙️ Technologies Used
+
+| Category                    | Technologies                                   |
+|----------------------------|------------------------------------------------|
+| **Backend**                | Django 5.0.9, Django Channels                  |
+| **Database**               | SQLite                                         |
+| **Frontend**               | HTML5, JavaScript (AJAX), Bootstrap 5.3.3, SweetAlert2 |
+| **Real-Time Communication**| WebSockets (Django Channels)                   |
+| **Charts & Graphs**        | Chart.js                                       |
+| **Static Files**           | WhiteNoise                                     |
+| **Environment**            | Python 3.x, SQLite3                            |
+
+---
+
+## 🚀 Installation & Execution
 
 <details>
-<summary><strong>1. Clonar el repositorio</strong></summary>
+<summary><strong>1. Clone the repository</strong></summary>
 
 ```bash
 git clone https://github.com/JJuan777/Nexwork.git
@@ -153,16 +154,16 @@ cd Nexwork
 </details>
 
 <details>
-<summary><strong>2. Crear un entorno virtual</strong></summary>
+<summary><strong>2. Create a virtual environment</strong></summary>
 
 ```bash
 python -m venv venv
-source venv/bin/activate  # En Windows usa: venv\Scripts\activate
+source venv/bin/activate  # On Windows use: venv\Scripts\activate
 ```
 </details>
 
 <details>
-<summary><strong>3. Instalar requerimientos</strong></summary>
+<summary><strong>3. Install requirements</strong></summary>
 
 ```bash
 pip install -r requirements.txt
@@ -170,13 +171,13 @@ pip install -r requirements.txt
 </details>
 
 <details>
-<summary><strong>4. Ejecutar el servidor</strong></summary>
+<summary><strong>4. Run the server</strong></summary>
 
 ```bash
 python manage.py runserver
 ```
 
-Luego abre tu navegador y entra a:
+Then open your browser and go to:
 
 ```
 http://127.0.0.1:8000/
@@ -185,149 +186,149 @@ http://127.0.0.1:8000/
 
 ---
 
-## 🔐 Credenciales de acceso
+## 🔐 Access Credentials
 
-Puedes usar las siguientes cuentas para probar la aplicación:
+You can use the following accounts to test the application:
 
-### 👤 Usuario común
-- **Usuario:** `jj.uan77`
-- **Contraseña:** `p4$$w0r321`
+### 👤 Regular User
+- **Username:** `jj.uan77`
+- **Password:** `p4$$w0r321`
 
-### 🛠️ Usuario administrador
-- **Usuario:** `jj.uan77`
-- **Contraseña:** `p4$$w0r321`
-- **Panel admin:** [http://127.0.0.1:8000/admin/](http://127.0.0.1:8000/admin/)
-
----
-## 💼 Cómo funciona Nexwork
-
-Nexwork es una plataforma profesional que permite a los usuarios crear perfiles, compartir contenido, buscar oportunidades laborales y conectar con otros profesionales o empresas.
-
-### 👤 Registro de usuarios
-
-Cualquier persona puede registrarse en [http://127.0.0.1:8000/registro/](http://127.0.0.1:8000/registro/), donde podrá elegir uno de los siguientes roles:
-
-- **Usuario profesional:** Ideal para personas que buscan oportunidades laborales, quieren construir y compartir un perfil profesional completo con su experiencia académica, laboral y habilidades destacadas.
-- **Empresa o reclutador:** Diseñado para crear ofertas de trabajo y gestionar postulaciones. Perfecto para empresas, HR managers o reclutadores que buscan talento.
-
-Al completar el registro, el sistema redirige automáticamente al usuario para que alimente su perfil con información académica y laboral relevante. Cuanta más información incluya, más atractivo será su perfil para otros.
-
-### 🖼️ Personalización del perfil
-
-- Agrega tu **foto de perfil** y un **banner profesional**.
-- Añade **experiencia laboral**, **formación académica**, **habilidades**, y más.
-- Comparte tu perfil con otros, como si fuera tu currículum en línea.
-
-### 📝 Publicaciones y contenido
-
-Los usuarios pueden:
-- Crear **publicaciones profesionales** para compartir ideas, logros o actualizaciones.
-- **Subir historias** efímeras tipo red social.
-- **Compartir publicaciones** de otros usuarios con su red.
-- **Comentar y reaccionar** a contenido publicado por otros.
-
-### 🤝 Conexiones e interacción
-
-Nexwork fomenta la interacción entre usuarios mediante:
-- Solicitudes de amistad y creación de una red profesional.
-- **Mensajes en tiempo real** vía WebSockets para una comunicación fluida.
-- Notificaciones dinámicas sobre conexiones, postulaciones y más.
-
-### 🎯 Postulaciones laborales
-
-- Los usuarios con perfil profesional pueden **postularse** fácilmente a los trabajos publicados.
-- Las empresas reciben **tarjetas de presentación** con la información del postulante.
-- Las vacantes pueden incluir estadísticas sobre **visualización, ubicación y etiquetas** destacadas.
-
-### 💡 Un espacio para destacar
-
-La plataforma está diseñada para ser una herramienta flexible: puedes usarla como portafolio profesional, como red de contactos laborales, o como sistema de búsqueda de talento. Tú decides cómo aprovecharla.
+### 🛠️ Administrator User
+- **Username:** `jj.uan77`
+- **Password:** `p4$$w0r321`
+- **Admin Panel:** [http://127.0.0.1:8000/admin/](http://127.0.0.1:8000/admin/)
 
 ---
 
-🚀 **Explora, crea y conecta. Nexwork es el siguiente paso en tu vida profesional digital.**
+## 💼 How Nexwork Works
 
+Nexwork is a professional platform that allows users to create profiles, share content, search for job opportunities, and connect with other professionals or companies.
+
+### 👤 User Registration
+
+Anyone can register at [http://127.0.0.1:8000/registro/](http://127.0.0.1:8000/registro/), where they can choose from the following roles:
+
+- **Professional User:** Ideal for individuals seeking job opportunities and looking to build and share a complete professional profile including academic background, work experience, and skills.
+- **Company or Recruiter:** Designed to create job postings and manage applications. Perfect for companies, HR managers, or recruiters searching for talent.
+
+After registration, users are automatically redirected to complete their profile with relevant academic and professional information. The more complete the profile, the more appealing it becomes to others.
+
+### 🖼️ Profile Customization
+
+- Add your **profile picture** and a **professional banner**.
+- Include your **work experience**, **education**, **skills**, and more.
+- Share your profile with others — like an online résumé.
+
+### 📝 Posts and Content
+
+Users can:
+- Create **professional posts** to share ideas, achievements, or updates.
+- Upload **ephemeral stories** similar to social media.
+- **Share other users' posts** with their own network.
+- **Comment and react** to shared content.
+
+### 🤝 Connections and Interaction
+
+Nexwork promotes user interaction through:
+- Friend requests and the creation of a professional network.
+- **Real-time messaging** via WebSockets for seamless communication.
+- Dynamic notifications about connections, job applications, and more.
+
+### 🎯 Job Applications
+
+- Users with a professional profile can **apply** directly to job postings.
+- Companies receive **presentation cards** with applicant information.
+- Job posts may include **view statistics**, **location insights**, and **highlighted tags**.
+
+### 💡 A Space to Stand Out
+
+The platform is designed to be flexible: use it as a professional portfolio, a networking tool, or a talent search system. You decide how to make the most of it.
 
 ---
-## 🧠 Código y organización
 
-El proyecto **Nexwork** está organizado en una arquitectura modular, que separa de manera clara la lógica de negocio, las vistas, los recursos estáticos y las plantillas HTML.
-
-### Estructura general
-
-Los directorios principales del proyecto son:
-
-- **NexworkApp/**: contiene toda la lógica de la aplicación, vistas, modelos, formularios, templatetags y migraciones.
-- **NexworkProject/**: carpeta raíz del proyecto Django que contiene los archivos de configuración (`settings.py`, `urls.py`, etc.).
-- **static/**: contiene todos los recursos estáticos como hojas de estilo, scripts JS, imágenes.
-- **templates/**: almacena las plantillas HTML organizadas por módulo o funcionalidad (`auth/`, `layouts/`, etc.).
+🚀 **Explore, create, and connect. Nexwork is the next step in your digital professional journey.**
 
 ---
 
-### 📦 App principal: NexworkApp
+## 🧠 Code and Structure
 
-La aplicación `NexworkApp` concentra toda la funcionalidad del sistema:
+The **Nexwork** project is organized using a modular architecture that clearly separates business logic, views, static assets, and HTML templates.
 
-- `views.py`: contiene la lógica de cada sección (perfil, publicaciones, historias, trabajos, solicitudes, etc.).
-- `models.py`: define todos los modelos de la base de datos (usuarios, trabajos, postulaciones, mensajes, etc.).
-- `forms.py`: formularios personalizados utilizados en el registro, publicaciones, postulaciones y demás.
-- `templatetags/`: filtros personalizados de Django usados en plantillas (por ejemplo, formateo de fechas o extracción de nombres).
-- `migrations/`: contiene las migraciones generadas por Django para crear y modificar la base de datos.
+### General Structure
+
+The main directories in the project are:
+
+- **NexworkApp/**: Contains all application logic, including views, models, forms, template tags, and migrations.
+- **NexworkProject/**: The root Django project folder, containing configuration files (`settings.py`, `urls.py`, etc.).
+- **static/**: Stores all static assets such as stylesheets, JavaScript files, and images.
+- **templates/**: Contains HTML templates, organized by module or feature (`auth/`, `layouts/`, etc.).
+
+---
+
+### 📦 Main App: NexworkApp
+
+The `NexworkApp` module contains the core functionality of the system:
+
+- `views.py`: Contains the logic for each section (profile, posts, stories, jobs, requests, etc.).
+- `models.py`: Defines all database models (users, jobs, applications, messages, etc.).
+- `forms.py`: Custom forms used for registration, posting, job applications, and more.
+- `templatetags/`: Custom Django template filters (e.g., date formatting, name extraction).
+- `migrations/`: Contains Django-generated migrations to create and modify the database.
 
 ---
 
 ### 🎨 Templates
 
-Las vistas HTML están organizadas en:
+HTML views are organized as follows:
 
-- `templates/Nexwork/layouts/`: estructura base de la interfaz (barra de navegación, layout general).
-- `templates/Nexwork/auth/`: vistas de autenticación como login y registro.
-- Otras vistas están divididas según módulos específicos (perfil, publicaciones, historias, estadísticas, etc.).
-
----
-
-### 🖼️ Static files
-
-Los archivos estáticos están en:
-
-- `static/css/`, `static/js/`, `static/images/`: contienen los estilos, scripts personalizados e imágenes del proyecto.
-- `static/bootstrap-5.3.3/`: versión local de Bootstrap utilizada en la UI.
-- `static/js/Nexwork/auth/`: scripts específicos para login, registro y validaciones.
-- `static/media/`: carpeta reservada para archivos multimedia (imágenes de perfil, banners, etc.).
+- `templates/Nexwork/layouts/`: Base UI structure (navigation bar, general layout).
+- `templates/Nexwork/auth/`: Authentication views like login and registration.
+- Other views are organized by specific modules (profile, posts, stories, statistics, etc.).
 
 ---
 
-### ⚙️ Proyecto base: NexworkProject
+### 🖼️ Static Files
 
-Contiene los archivos base de configuración de Django:
+Static assets are located in:
 
-- `settings.py`: configuración principal del proyecto.
-- `urls.py`: mapeo de rutas y vistas.
-- `asgi.py / wsgi.py`: punto de entrada para servidores ASGI/WSGI.
+- `static/css/`, `static/js/`, `static/images/`: Contains project stylesheets, custom scripts, and images.
+- `static/bootstrap-5.3.3/`: Local version of Bootstrap used in the UI.
+- `static/js/Nexwork/auth/`: Scripts specifically for login, registration, and validations.
+- `static/media/`: Reserved folder for media files (profile images, banners, etc.).
 
 ---
 
-## 📄 Acerca de y licencia
+### ⚙️ Project Base: NexworkProject
 
-Este proyecto fue desarrollado originalmente en 2025 como proyecto final del curso [**CS50’s Web Programming with Python and JavaScript**](https://cs50.harvard.edu/web/2020/projects/final/capstone/) de HarvardX.
+This directory contains the main Django configuration files:
 
-La versión principal actual se encuentra en la rama `main`, y ha sido mejorada con nuevas funcionalidades desde su entrega inicial: mensajes en tiempo real, estadísticas visuales, sistema de postulaciones, historias y un diseño completamente responsivo.
+- `settings.py`: Main project configuration.
+- `urls.py`: URL and view routing.
+- `asgi.py / wsgi.py`: Entry points for ASGI/WSGI servers.
 
-Este es un proyecto personal, de código abierto, distribuido bajo la **Licencia MIT**. Puedes usarlo, estudiarlo, modificarlo o distribuirlo libremente bajo los términos de dicha licencia.
+---
 
-**Nexwork** se proporciona "tal cual", sin garantías de ningún tipo. El autor no se hace responsable de ningún daño, pérdida de datos o inconveniente causado por el uso del software.
+## 📄 About & License
 
-Si te gustó este proyecto, ¡considera motivar al desarrollador dejando una ⭐ en [GitHub](https://github.com/JJuan777/Nexwork)!
+This project was originally developed in 2025 as the final project for the [**CS50’s Web Programming with Python and JavaScript**](https://cs50.harvard.edu/web/2020/projects/final/capstone/) course from HarvardX.
 
+The current main version is on the `main` branch and has been enhanced with new features since its initial submission: real-time messaging, visual statistics, job application system, stories, and a fully responsive design.
+
+This is a personal, open-source project distributed under the **MIT License**. You are free to use, study, modify, or distribute it under the terms of that license.
+
+**Nexwork** is provided “as is”, without any warranty. The author is not responsible for any damage, data loss, or inconvenience caused by using this software.
+
+If you enjoyed this project, consider supporting the developer by leaving a ⭐ on [GitHub](https://github.com/JJuan777/Nexwork)!
 
 <details>
-<summary><strong>📦 Despliegue en Railway</strong></summary>
+<summary><strong>📦 Railway Deployment</strong></summary>
 
-## 📦 Despliegue en Railway <a name="deploy-railway"></a>
+## 📦 Railway Deployment <a name="deploy-railway"></a>
 
-El proyecto fue desplegado en producción utilizando **[Railway](https://railway.app)**, una plataforma que permite automatizar la construcción y despliegue de aplicaciones con soporte para Docker y variables de entorno.
+The project was deployed to production using **[Railway](https://railway.app)**, a platform that automates the building and deployment of applications with support for Docker and environment variables.
 
-### 🔧 Configuración utilizada
+### 🔧 Configuration Used
 
 - **Dockerfile**:
 
@@ -348,7 +349,7 @@ CMD ["gunicorn", "NexworkProject.wsgi:application", "--bind", "0.0.0.0:8001", "-
 3.12
 ```
 
-- **settings.py (producción)**:
+- **settings.py (production)**:
 
 ```python
 ALLOWED_HOSTS = ['localhost', 'nexwork-app.up.railway.app']
@@ -356,16 +357,18 @@ PORT = os.getenv('PORT', '8001')
 CSRF_TRUSTED_ORIGINS = ['https://web-production-bb26.up.railway.app']
 ```
 
-### 🔄 Para otros entornos
+### 🔄 For Other Environments
 
-Para desplegar en otros servicios:
+To deploy on other platforms:
 
-- Cambia `ALLOWED_HOSTS` y `CSRF_TRUSTED_ORIGINS`.
-- Ajusta el puerto si es necesario.
-- Alternativamente, puedes usar un `Procfile`:
+- Update `ALLOWED_HOSTS` and `CSRF_TRUSTED_ORIGINS` as needed.
+- Adjust the port number if required.
+- Alternatively, you can use a `Procfile`:
 
 ```txt
 web: gunicorn NexworkProject.wsgi:application --bind 0.0.0.0:$PORT --workers 3
 ```
+
+🔗 Project repository: [https://github.com/JJuan777/Nexwork](https://github.com/JJuan777/Nexwork)
 
 </details>
